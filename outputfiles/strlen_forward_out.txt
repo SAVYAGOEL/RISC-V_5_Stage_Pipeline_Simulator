@@ -1,0 +1,71 @@
+inst_mem[0] = 659 (00000000000000000000001010010011)
+inst_mem[1] = 10650419 (00000000101000101000001100110011)
+inst_mem[2] = 197379 (00000000000000110000001100000011)
+inst_mem[3] = 198243 (00000000000000110000011001100011)
+inst_mem[4] = 1213075 (00000000000100101000001010010011)
+inst_mem[5] = 4279234671 (11111111000011111111000001101111)
+inst_mem[6] = 165139 (00000000000000101000010100010011)
+inst_mem[7] = 32871 (00000000000000001000000001100111)
+Loaded 8 instructions from ../inputfiles/strlen.txt
+Cycle 1: IF fetched 00000000000000000000001010010011
+Instruction in binary: 00000000000000000000001010010011
+opcode: 0010011, funct3: 000, funct7: 0000000
+rd: 5, rs1: 0, rs2: 0, imm: 0
+Cycle 2: ID decoded 00000000000000000000001010010011
+Cycle 2: IF fetched 00000000101000101000001100110011
+Cycle 3: EX computed 0
+Instruction in binary: 00000000101000101000001100110011
+opcode: 0110011, funct3: 000, funct7: 0000000
+rd: 6, rs1: 5, rs2: 10, imm: 0
+Cycle 3: ID decoded 00000000101000101000001100110011
+Cycle 3: IF fetched 00000000000000110000001100000011
+Cycle 4: MEM completed
+Cycle 4: EX computed 1024
+Instruction in binary: 00000000000000110000001100000011
+opcode: 0000011, funct3: 000, funct7: 0000000
+rd: 6, rs1: 6, rs2: 0, imm: 0
+Cycle 4: ID decoded 00000000000000110000001100000011
+Cycle 4: IF fetched 00000000000000110000011001100011
+Cycle 5: WB wrote 0 to reg 5
+Cycle 5: MEM completed
+Cycle 5: EX computed 1024
+Instruction in binary: 00000000000000110000011001100011
+opcode: 1100011, funct3: 000, funct7: 0000000
+rd: 0, rs1: 6, rs2: 0, imm: 12
+Cycle 5: ID decoded 00000000000000110000011001100011
+Cycle 5: IF fetched 00000000000100101000001010010011
+Cycle 6: WB wrote 1024 to reg 6
+Cycle 6: MEM completed
+Cycle 6: EX computed 104
+Instruction in binary: 00000000000100101000001010010011
+opcode: 0010011, funct3: 000, funct7: 0000000
+rd: 5, rs1: 5, rs2: 0, imm: 1
+Cycle 6: ID decoded 00000000000100101000001010010011
+Cycle 6: IF fetched 11111111000011111111000001101111
+Cycle 7: WB wrote 104 to reg 6
+Cycle 7: MEM completed
+Cycle 7: EX computed 105
+Instruction in binary: 11111111000011111111000001101111
+opcode: 1101111, funct3: 111, funct7: 1111111
+rd: 0, rs1: 0, rs2: 0, imm: -2064
+Cycle 7: ID decoded 11111111000011111111000001101111
+Cycle 7: IF fetched 00000000000000101000010100010011
+Cycle 8: MEM completed
+Cycle 8: EX computed 0
+Instruction in binary: 00000000000000101000010100010011
+opcode: 0010011, funct3: 000, funct7: 0000000
+rd: 10, rs1: 5, rs2: 0, imm: 0
+Cycle 8: ID decoded 00000000000000101000010100010011
+Cycle 8: IF fetched 00000000000000001000000001100111
+Cycle 9: WB wrote 105 to reg 5
+Cycle 9: MEM completed
+Cycle 9: EX computed 0
+Instruction in binary: 00000000000000001000000001100111
+opcode: 1100111, funct3: 000, funct7: 0000000
+rd: 0, rs1: 1, rs2: 0, imm: 0
+Cycle 9: ID decoded 00000000000000001000000001100111
+Cycle 10: MEM completed
+Cycle 10: EX computed 0
+Cycle 11: WB wrote 0 to reg 10
+Cycle 11: MEM completed
+Final a0 (length): 0
