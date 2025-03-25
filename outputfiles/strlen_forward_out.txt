@@ -1,71 +1,935 @@
-inst_mem[0] = 659 (00000000000000000000001010010011)
+inst_mem[0] = 4755 (00000000000000000001001010010011)
 inst_mem[1] = 10650419 (00000000101000101000001100110011)
 inst_mem[2] = 197379 (00000000000000110000001100000011)
 inst_mem[3] = 198243 (00000000000000110000011001100011)
 inst_mem[4] = 1213075 (00000000000100101000001010010011)
-inst_mem[5] = 4279234671 (11111111000011111111000001101111)
+inst_mem[5] = 4280283247 (11111111000111111111000001101111)
 inst_mem[6] = 165139 (00000000000000101000010100010011)
 inst_mem[7] = 32871 (00000000000000001000000001100111)
 Loaded 8 instructions from ../inputfiles/strlen.txt
-Cycle 1: IF fetched 00000000000000000000001010010011
-Instruction in binary: 00000000000000000000001010010011
-opcode: 0010011, funct3: 000, funct7: 0000000
-rd: 5, rs1: 0, rs2: 0, imm: 0
-Cycle 2: ID decoded 00000000000000000000001010010011
-Cycle 2: IF fetched 00000000101000101000001100110011
-Cycle 3: EX computed 0
+Cycle 1: WB stage invalid
+Cycle 1: MEM stage invalid
+Cycle 1: EX stage invalid
+Cycle 1: IF fetched 00000000000000000001001010010011 at PC=0
+Cycle 2: WB stage invalid
+Cycle 2: MEM stage invalid
+Cycle 2: EX stage invalid
+id_ex.valid: 0, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 0, rs2: 0, opcode: 0010011
+ex_mem.valid: 0, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 0, rs2: 0, opcode: 0010011
+Instruction in binary: 00000000000000000001001010010011
+opcode: 0010011, funct3: 001, funct7: 0000000
+I-type rd: 5, rs1: 0, imm: 0
+reg[0] = 0
+reg[5] = 2
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 0
+ex_mem.reg_write: 0, ex_mem.rd: 0, id_ex.rs1: 0
+mem_wb.reg_write: 0, mem_wb.rd: 0, id_ex.rs1: 0
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+valA: 0, valB: 0
+id_ex.mem_read at end of ID: 0
+Cycle 2: ID decoded 00000000000000000001001010010011
+Cycle 2: IF fetched 00000000101000101000001100110011 at PC=4
+Cycle 3: WB stage invalid
+Cycle 3: MEM stage invalid
+ex_mem.rd: 5, id_ex.rs1: 0, id_ex.rs2: 0, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 3: EX computed 0 (valA=0, operand2=0, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 5, rs2: 10, opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 5, rs2: 10, opcode: 0110011
 Instruction in binary: 00000000101000101000001100110011
 opcode: 0110011, funct3: 000, funct7: 0000000
-rd: 6, rs1: 5, rs2: 10, imm: 0
+R-type: rd=6, rs1=5, rs2=10
+reg[0] = 0
+reg[5] = 2
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 2, Data 2(rs2): 1024
+ex_mem.reg_write: 1, ex_mem.rd: 5, id_ex.rs1: 5
+mem_wb.reg_write: 0, mem_wb.rd: 0, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+ID Forwarding EX/MEM to valA: 0
+valA: 0, valB: 1024
+id_ex.mem_read at end of ID: 0
 Cycle 3: ID decoded 00000000101000101000001100110011
-Cycle 3: IF fetched 00000000000000110000001100000011
-Cycle 4: MEM completed
-Cycle 4: EX computed 1024
+Cycle 3: IF fetched 00000000000000110000001100000011 at PC=8
+Cycle 4: WB stage invalid
+ex_mem.mem_read: 0
+Cycle 4: MEM passed rd_val=0
+ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
+Forwarding EX/MEM to valA: 0
+valA is coming from EX/MEM stage
+valB is coming from ID/EX stage
+Cycle 4: EX computed 1024 (valA=0, operand2=1024, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
 Instruction in binary: 00000000000000110000001100000011
 opcode: 0000011, funct3: 000, funct7: 0000000
-rd: 6, rs1: 6, rs2: 0, imm: 0
+Load: rd=6, rs1=6, imm: 0
+id_ex.mem_read: 1
+reg[0] = 0
+reg[5] = 2
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 6
+mem_wb.reg_write: 1, mem_wb.rd: 5, id_ex.rs1: 6
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+ID Forwarding EX/MEM to valA: 1024
+valA: 1024, valB: 0
+id_ex.mem_read at end of ID: 1
 Cycle 4: ID decoded 00000000000000110000001100000011
-Cycle 4: IF fetched 00000000000000110000011001100011
+Cycle 4: IF fetched 00000000000000110000011001100011 at PC=12
 Cycle 5: WB wrote 0 to reg 5
-Cycle 5: MEM completed
-Cycle 5: EX computed 1024
+x5 = 0, x6 = 0
+ex_mem.mem_read: 0
+Cycle 5: MEM passed rd_val=1024
+ex_mem.rd: 6, id_ex.rs1: 6, id_ex.rs2: 0, ex_mem.reg_write: 1
+Forwarding EX/MEM to valA: 1024
+valA is coming from EX/MEM stage
+valB is coming from ID/EX stage
+Cycle 5: EX computed 1024 (valA=1024, operand2=0, add)
+Cycle 5: ID stalled due to load-use hazard
+id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Cycle 5: ID stalled due to branch hazard level1
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Cycle 5: ID stalled due to branch hazard level2
+Cycle 5: IF fetched 00000000000000110000011001100011 at PC=12
+Cycle 6: WB wrote 1024 to reg 6
+x5 = 0, x6 = 1024
+ex_mem.mem_read: 1
+MEM Forwarding rs1 from WB/IF: 6
+Cycle 6: MEM read from addr 0, data=0
+Cycle 6: EX stage invalid
+id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+ex_mem.valid: 0, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
 Instruction in binary: 00000000000000110000011001100011
 opcode: 1100011, funct3: 000, funct7: 0000000
-rd: 0, rs1: 6, rs2: 0, imm: 12
-Cycle 5: ID decoded 00000000000000110000011001100011
-Cycle 5: IF fetched 00000000000100101000001010010011
-Cycle 6: WB wrote 1024 to reg 6
-Cycle 6: MEM completed
-Cycle 6: EX computed 104
+SB-type: rs1=6, rs2=0, imm=12
+reg[0] = 0
+reg[5] = 0
+reg[6] = 1024
+reg[10] = 1024
+Data 1(rs1): 1024, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 6
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 6
+ex_mem.mem_read: 1, mem_wb.mem_read: 1
+ID Forwarding EX/MEM to valA: 1024
+valA: 1024, valB: 0
+BEQ: valA=1024, valB=0, take_branch=0
+id_ex.mem_read at end of ID: 0
+Cycle 6: ID decoded 00000000000000110000011001100011
+Cycle 6: IF fetched 00000000000100101000001010010011 at PC=16
+Cycle 7: WB wrote 0 to reg 6
+x5 = 0, x6 = 0
+Cycle 7: MEM stage invalid
+ex_mem.rd: 0, id_ex.rs1: 6, id_ex.rs2: 0, ex_mem.reg_write: 0
+Forwarding EX/MEM to valA: 1024
+valA is coming from EX/MEM stage
+valB is coming from ID/EX stage
+Cycle 7: EX computed branch target 24 for beq
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
 Instruction in binary: 00000000000100101000001010010011
 opcode: 0010011, funct3: 000, funct7: 0000000
-rd: 5, rs1: 5, rs2: 0, imm: 1
-Cycle 6: ID decoded 00000000000100101000001010010011
-Cycle 6: IF fetched 11111111000011111111000001101111
-Cycle 7: WB wrote 104 to reg 6
-Cycle 7: MEM completed
-Cycle 7: EX computed 105
-Instruction in binary: 11111111000011111111000001101111
+I-type rd: 5, rs1: 5, imm: 1
+reg[0] = 0
+reg[5] = 0
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 0
+ex_mem.reg_write: 0, ex_mem.rd: 0, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 1
+valA: 0, valB: 0
+id_ex.mem_read at end of ID: 0
+Cycle 7: ID decoded 00000000000100101000001010010011
+Cycle 7: IF fetched 11111111000111111111000001101111 at PC=20
+Cycle 8: WB stage invalid
+ex_mem.mem_read: 0
+Cycle 8: MEM passed rd_val=24
+ex_mem.rd: 5, id_ex.rs1: 5, id_ex.rs2: 0, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 8: EX computed 1 (valA=0, operand2=1, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+Instruction in binary: 11111111000111111111000001101111
 opcode: 1101111, funct3: 111, funct7: 1111111
-rd: 0, rs1: 0, rs2: 0, imm: -2064
-Cycle 7: ID decoded 11111111000011111111000001101111
-Cycle 7: IF fetched 00000000000000101000010100010011
-Cycle 8: MEM completed
-Cycle 8: EX computed 0
-Instruction in binary: 00000000000000101000010100010011
+J-type jal: rd=0, imm=-16
+reg[0] = 0
+reg[5] = 0
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 5, id_ex.rs1: 0
+mem_wb.reg_write: 0, mem_wb.rd: 0, id_ex.rs1: 0
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+valA: 0, valB: 0
+JAL to PC=4
+id_ex.mem_read at end of ID: 0
+Cycle 8: ID decoded 11111111000111111111000001101111
+Cycle 8: IF fetched 00000000101000101000001100110011 at PC=4
+Cycle 9: WB no write
+ex_mem.mem_read: 0
+Cycle 9: MEM passed rd_val=1
+ex_mem.rd: 0, id_ex.rs1: 0, id_ex.rs2: 0, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 9: EX computed return address 24 for jal/jalr
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+Instruction in binary: 00000000101000101000001100110011
+opcode: 0110011, funct3: 000, funct7: 0000000
+R-type: rd=6, rs1=5, rs2=10
+reg[0] = 0
+reg[5] = 0
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 1024
+ex_mem.reg_write: 1, ex_mem.rd: 0, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 5, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+ID Forwarding MEM/WB to valA: 1
+valA: 1, valB: 1024
+id_ex.mem_read at end of ID: 0
+Cycle 9: ID decoded 00000000101000101000001100110011
+Cycle 9: IF fetched 00000000101000101000001100110011 at PC=4
+Cycle 10: WB wrote 1 to reg 5
+x5 = 1, x6 = 0
+ex_mem.mem_read: 0
+Cycle 10: MEM passed rd_val=24
+ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
+Forwarding MEM/WB to valA: 24
+valA is coming from MEM/WB stage
+valB is coming from ID/EX stage
+Cycle 10: EX computed 1048 (valA=24, operand2=1024, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+Instruction in binary: 00000000101000101000001100110011
+opcode: 0110011, funct3: 000, funct7: 0000000
+R-type: rd=6, rs1=5, rs2=10
+reg[0] = 0
+reg[5] = 1
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 1, Data 2(rs2): 1024
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 0, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+valA: 1, valB: 1024
+id_ex.mem_read at end of ID: 0
+Cycle 10: ID decoded 00000000101000101000001100110011
+Cycle 10: IF fetched 00000000000000110000001100000011 at PC=8
+Cycle 11: WB no write
+ex_mem.mem_read: 0
+Cycle 11: MEM passed rd_val=1048
+ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 11: EX computed 1025 (valA=1, operand2=1024, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+Instruction in binary: 00000000000000110000001100000011
+opcode: 0000011, funct3: 000, funct7: 0000000
+Load: rd=6, rs1=6, imm: 0
+id_ex.mem_read: 1
+reg[0] = 0
+reg[5] = 1
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 6
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 6
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+ID Forwarding EX/MEM to valA: 1025
+valA: 1025, valB: 0
+id_ex.mem_read at end of ID: 1
+Cycle 11: ID decoded 00000000000000110000001100000011
+Cycle 11: IF fetched 00000000000000110000011001100011 at PC=12
+Cycle 12: WB wrote 1048 to reg 6
+x5 = 1, x6 = 1048
+ex_mem.mem_read: 0
+Cycle 12: MEM passed rd_val=1025
+ex_mem.rd: 6, id_ex.rs1: 6, id_ex.rs2: 0, ex_mem.reg_write: 1
+Forwarding EX/MEM to valA: 1025
+valA is coming from EX/MEM stage
+valB is coming from ID/EX stage
+Cycle 12: EX computed 1025 (valA=1025, operand2=0, add)
+Cycle 12: ID stalled due to load-use hazard
+id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Cycle 12: ID stalled due to branch hazard level1
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Cycle 12: ID stalled due to branch hazard level2
+Cycle 12: IF fetched 00000000000000110000011001100011 at PC=12
+Cycle 13: WB wrote 1025 to reg 6
+x5 = 1, x6 = 1025
+ex_mem.mem_read: 1
+MEM Forwarding rs1 from WB/IF: 6
+Cycle 13: MEM read from addr 0, data=0
+Cycle 13: EX stage invalid
+id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+ex_mem.valid: 0, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Instruction in binary: 00000000000000110000011001100011
+opcode: 1100011, funct3: 000, funct7: 0000000
+SB-type: rs1=6, rs2=0, imm=12
+reg[0] = 0
+reg[5] = 1
+reg[6] = 1025
+reg[10] = 1024
+Data 1(rs1): 1025, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 6
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 6
+ex_mem.mem_read: 1, mem_wb.mem_read: 1
+ID Forwarding EX/MEM to valA: 1025
+valA: 1025, valB: 0
+BEQ: valA=1025, valB=0, take_branch=0
+id_ex.mem_read at end of ID: 0
+Cycle 13: ID decoded 00000000000000110000011001100011
+Cycle 13: IF fetched 00000000000100101000001010010011 at PC=16
+Cycle 14: WB wrote 0 to reg 6
+x5 = 1, x6 = 0
+Cycle 14: MEM stage invalid
+ex_mem.rd: 0, id_ex.rs1: 6, id_ex.rs2: 0, ex_mem.reg_write: 0
+Forwarding EX/MEM to valA: 1025
+valA is coming from EX/MEM stage
+valB is coming from ID/EX stage
+Cycle 14: EX computed branch target 24 for beq
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+Instruction in binary: 00000000000100101000001010010011
 opcode: 0010011, funct3: 000, funct7: 0000000
-rd: 10, rs1: 5, rs2: 0, imm: 0
-Cycle 8: ID decoded 00000000000000101000010100010011
-Cycle 8: IF fetched 00000000000000001000000001100111
-Cycle 9: WB wrote 105 to reg 5
-Cycle 9: MEM completed
-Cycle 9: EX computed 0
-Instruction in binary: 00000000000000001000000001100111
-opcode: 1100111, funct3: 000, funct7: 0000000
-rd: 0, rs1: 1, rs2: 0, imm: 0
-Cycle 9: ID decoded 00000000000000001000000001100111
-Cycle 10: MEM completed
-Cycle 10: EX computed 0
-Cycle 11: WB wrote 0 to reg 10
-Cycle 11: MEM completed
-Final a0 (length): 0
+I-type rd: 5, rs1: 5, imm: 1
+reg[0] = 0
+reg[5] = 1
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 1, Data 2(rs2): 0
+ex_mem.reg_write: 0, ex_mem.rd: 0, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 1
+valA: 1, valB: 0
+id_ex.mem_read at end of ID: 0
+Cycle 14: ID decoded 00000000000100101000001010010011
+Cycle 14: IF fetched 11111111000111111111000001101111 at PC=20
+Cycle 15: WB stage invalid
+ex_mem.mem_read: 0
+Cycle 15: MEM passed rd_val=24
+ex_mem.rd: 5, id_ex.rs1: 5, id_ex.rs2: 0, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 15: EX computed 2 (valA=1, operand2=1, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+Instruction in binary: 11111111000111111111000001101111
+opcode: 1101111, funct3: 111, funct7: 1111111
+J-type jal: rd=0, imm=-16
+reg[0] = 0
+reg[5] = 1
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 5, id_ex.rs1: 0
+mem_wb.reg_write: 0, mem_wb.rd: 0, id_ex.rs1: 0
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+valA: 0, valB: 0
+JAL to PC=4
+id_ex.mem_read at end of ID: 0
+Cycle 15: ID decoded 11111111000111111111000001101111
+Cycle 15: IF fetched 00000000101000101000001100110011 at PC=4
+Cycle 16: WB no write
+ex_mem.mem_read: 0
+Cycle 16: MEM passed rd_val=2
+ex_mem.rd: 0, id_ex.rs1: 0, id_ex.rs2: 0, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 16: EX computed return address 24 for jal/jalr
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+Instruction in binary: 00000000101000101000001100110011
+opcode: 0110011, funct3: 000, funct7: 0000000
+R-type: rd=6, rs1=5, rs2=10
+reg[0] = 0
+reg[5] = 1
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 1, Data 2(rs2): 1024
+ex_mem.reg_write: 1, ex_mem.rd: 0, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 5, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+ID Forwarding MEM/WB to valA: 2
+valA: 2, valB: 1024
+id_ex.mem_read at end of ID: 0
+Cycle 16: ID decoded 00000000101000101000001100110011
+Cycle 16: IF fetched 00000000101000101000001100110011 at PC=4
+Cycle 17: WB wrote 2 to reg 5
+x5 = 2, x6 = 0
+ex_mem.mem_read: 0
+Cycle 17: MEM passed rd_val=24
+ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
+Forwarding MEM/WB to valA: 24
+valA is coming from MEM/WB stage
+valB is coming from ID/EX stage
+Cycle 17: EX computed 1048 (valA=24, operand2=1024, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+Instruction in binary: 00000000101000101000001100110011
+opcode: 0110011, funct3: 000, funct7: 0000000
+R-type: rd=6, rs1=5, rs2=10
+reg[0] = 0
+reg[5] = 2
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 2, Data 2(rs2): 1024
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 0, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+valA: 2, valB: 1024
+id_ex.mem_read at end of ID: 0
+Cycle 17: ID decoded 00000000101000101000001100110011
+Cycle 17: IF fetched 00000000000000110000001100000011 at PC=8
+Cycle 18: WB no write
+ex_mem.mem_read: 0
+Cycle 18: MEM passed rd_val=1048
+ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 18: EX computed 1026 (valA=2, operand2=1024, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+Instruction in binary: 00000000000000110000001100000011
+opcode: 0000011, funct3: 000, funct7: 0000000
+Load: rd=6, rs1=6, imm: 0
+id_ex.mem_read: 1
+reg[0] = 0
+reg[5] = 2
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 6
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 6
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+ID Forwarding EX/MEM to valA: 1026
+valA: 1026, valB: 0
+id_ex.mem_read at end of ID: 1
+Cycle 18: ID decoded 00000000000000110000001100000011
+Cycle 18: IF fetched 00000000000000110000011001100011 at PC=12
+Cycle 19: WB wrote 1048 to reg 6
+x5 = 2, x6 = 1048
+ex_mem.mem_read: 0
+Cycle 19: MEM passed rd_val=1026
+ex_mem.rd: 6, id_ex.rs1: 6, id_ex.rs2: 0, ex_mem.reg_write: 1
+Forwarding EX/MEM to valA: 1026
+valA is coming from EX/MEM stage
+valB is coming from ID/EX stage
+Cycle 19: EX computed 1026 (valA=1026, operand2=0, add)
+Cycle 19: ID stalled due to load-use hazard
+id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Cycle 19: ID stalled due to branch hazard level1
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Cycle 19: ID stalled due to branch hazard level2
+Cycle 19: IF fetched 00000000000000110000011001100011 at PC=12
+Cycle 20: WB wrote 1026 to reg 6
+x5 = 2, x6 = 1026
+ex_mem.mem_read: 1
+MEM Forwarding rs1 from WB/IF: 6
+Cycle 20: MEM read from addr 0, data=0
+Cycle 20: EX stage invalid
+id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+ex_mem.valid: 0, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Instruction in binary: 00000000000000110000011001100011
+opcode: 1100011, funct3: 000, funct7: 0000000
+SB-type: rs1=6, rs2=0, imm=12
+reg[0] = 0
+reg[5] = 2
+reg[6] = 1026
+reg[10] = 1024
+Data 1(rs1): 1026, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 6
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 6
+ex_mem.mem_read: 1, mem_wb.mem_read: 1
+ID Forwarding EX/MEM to valA: 1026
+valA: 1026, valB: 0
+BEQ: valA=1026, valB=0, take_branch=0
+id_ex.mem_read at end of ID: 0
+Cycle 20: ID decoded 00000000000000110000011001100011
+Cycle 20: IF fetched 00000000000100101000001010010011 at PC=16
+Cycle 21: WB wrote 0 to reg 6
+x5 = 2, x6 = 0
+Cycle 21: MEM stage invalid
+ex_mem.rd: 0, id_ex.rs1: 6, id_ex.rs2: 0, ex_mem.reg_write: 0
+Forwarding EX/MEM to valA: 1026
+valA is coming from EX/MEM stage
+valB is coming from ID/EX stage
+Cycle 21: EX computed branch target 24 for beq
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+Instruction in binary: 00000000000100101000001010010011
+opcode: 0010011, funct3: 000, funct7: 0000000
+I-type rd: 5, rs1: 5, imm: 1
+reg[0] = 0
+reg[5] = 2
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 2, Data 2(rs2): 0
+ex_mem.reg_write: 0, ex_mem.rd: 0, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 1
+valA: 2, valB: 0
+id_ex.mem_read at end of ID: 0
+Cycle 21: ID decoded 00000000000100101000001010010011
+Cycle 21: IF fetched 11111111000111111111000001101111 at PC=20
+Cycle 22: WB stage invalid
+ex_mem.mem_read: 0
+Cycle 22: MEM passed rd_val=24
+ex_mem.rd: 5, id_ex.rs1: 5, id_ex.rs2: 0, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 22: EX computed 3 (valA=2, operand2=1, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+Instruction in binary: 11111111000111111111000001101111
+opcode: 1101111, funct3: 111, funct7: 1111111
+J-type jal: rd=0, imm=-16
+reg[0] = 0
+reg[5] = 2
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 5, id_ex.rs1: 0
+mem_wb.reg_write: 0, mem_wb.rd: 0, id_ex.rs1: 0
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+valA: 0, valB: 0
+JAL to PC=4
+id_ex.mem_read at end of ID: 0
+Cycle 22: ID decoded 11111111000111111111000001101111
+Cycle 22: IF fetched 00000000101000101000001100110011 at PC=4
+Cycle 23: WB no write
+ex_mem.mem_read: 0
+Cycle 23: MEM passed rd_val=3
+ex_mem.rd: 0, id_ex.rs1: 0, id_ex.rs2: 0, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 23: EX computed return address 24 for jal/jalr
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+Instruction in binary: 00000000101000101000001100110011
+opcode: 0110011, funct3: 000, funct7: 0000000
+R-type: rd=6, rs1=5, rs2=10
+reg[0] = 0
+reg[5] = 2
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 2, Data 2(rs2): 1024
+ex_mem.reg_write: 1, ex_mem.rd: 0, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 5, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+ID Forwarding MEM/WB to valA: 3
+valA: 3, valB: 1024
+id_ex.mem_read at end of ID: 0
+Cycle 23: ID decoded 00000000101000101000001100110011
+Cycle 23: IF fetched 00000000101000101000001100110011 at PC=4
+Cycle 24: WB wrote 3 to reg 5
+x5 = 3, x6 = 0
+ex_mem.mem_read: 0
+Cycle 24: MEM passed rd_val=24
+ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
+Forwarding MEM/WB to valA: 24
+valA is coming from MEM/WB stage
+valB is coming from ID/EX stage
+Cycle 24: EX computed 1048 (valA=24, operand2=1024, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+Instruction in binary: 00000000101000101000001100110011
+opcode: 0110011, funct3: 000, funct7: 0000000
+R-type: rd=6, rs1=5, rs2=10
+reg[0] = 0
+reg[5] = 3
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 3, Data 2(rs2): 1024
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 0, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+valA: 3, valB: 1024
+id_ex.mem_read at end of ID: 0
+Cycle 24: ID decoded 00000000101000101000001100110011
+Cycle 24: IF fetched 00000000000000110000001100000011 at PC=8
+Cycle 25: WB no write
+ex_mem.mem_read: 0
+Cycle 25: MEM passed rd_val=1048
+ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 25: EX computed 1027 (valA=3, operand2=1024, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+Instruction in binary: 00000000000000110000001100000011
+opcode: 0000011, funct3: 000, funct7: 0000000
+Load: rd=6, rs1=6, imm: 0
+id_ex.mem_read: 1
+reg[0] = 0
+reg[5] = 3
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 6
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 6
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+ID Forwarding EX/MEM to valA: 1027
+valA: 1027, valB: 0
+id_ex.mem_read at end of ID: 1
+Cycle 25: ID decoded 00000000000000110000001100000011
+Cycle 25: IF fetched 00000000000000110000011001100011 at PC=12
+Cycle 26: WB wrote 1048 to reg 6
+x5 = 3, x6 = 1048
+ex_mem.mem_read: 0
+Cycle 26: MEM passed rd_val=1027
+ex_mem.rd: 6, id_ex.rs1: 6, id_ex.rs2: 0, ex_mem.reg_write: 1
+Forwarding EX/MEM to valA: 1027
+valA is coming from EX/MEM stage
+valB is coming from ID/EX stage
+Cycle 26: EX computed 1027 (valA=1027, operand2=0, add)
+Cycle 26: ID stalled due to load-use hazard
+id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Cycle 26: ID stalled due to branch hazard level1
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Cycle 26: ID stalled due to branch hazard level2
+Cycle 26: IF fetched 00000000000000110000011001100011 at PC=12
+Cycle 27: WB wrote 1027 to reg 6
+x5 = 3, x6 = 1027
+ex_mem.mem_read: 1
+MEM Forwarding rs1 from WB/IF: 6
+Cycle 27: MEM read from addr 0, data=0
+Cycle 27: EX stage invalid
+id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+ex_mem.valid: 0, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Instruction in binary: 00000000000000110000011001100011
+opcode: 1100011, funct3: 000, funct7: 0000000
+SB-type: rs1=6, rs2=0, imm=12
+reg[0] = 0
+reg[5] = 3
+reg[6] = 1027
+reg[10] = 1024
+Data 1(rs1): 1027, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 6
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 6
+ex_mem.mem_read: 1, mem_wb.mem_read: 1
+ID Forwarding EX/MEM to valA: 1027
+valA: 1027, valB: 0
+BEQ: valA=1027, valB=0, take_branch=0
+id_ex.mem_read at end of ID: 0
+Cycle 27: ID decoded 00000000000000110000011001100011
+Cycle 27: IF fetched 00000000000100101000001010010011 at PC=16
+Cycle 28: WB wrote 0 to reg 6
+x5 = 3, x6 = 0
+Cycle 28: MEM stage invalid
+ex_mem.rd: 0, id_ex.rs1: 6, id_ex.rs2: 0, ex_mem.reg_write: 0
+Forwarding EX/MEM to valA: 1027
+valA is coming from EX/MEM stage
+valB is coming from ID/EX stage
+Cycle 28: EX computed branch target 24 for beq
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+Instruction in binary: 00000000000100101000001010010011
+opcode: 0010011, funct3: 000, funct7: 0000000
+I-type rd: 5, rs1: 5, imm: 1
+reg[0] = 0
+reg[5] = 3
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 3, Data 2(rs2): 0
+ex_mem.reg_write: 0, ex_mem.rd: 0, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 1
+valA: 3, valB: 0
+id_ex.mem_read at end of ID: 0
+Cycle 28: ID decoded 00000000000100101000001010010011
+Cycle 28: IF fetched 11111111000111111111000001101111 at PC=20
+Cycle 29: WB stage invalid
+ex_mem.mem_read: 0
+Cycle 29: MEM passed rd_val=24
+ex_mem.rd: 5, id_ex.rs1: 5, id_ex.rs2: 0, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 29: EX computed 4 (valA=3, operand2=1, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+Instruction in binary: 11111111000111111111000001101111
+opcode: 1101111, funct3: 111, funct7: 1111111
+J-type jal: rd=0, imm=-16
+reg[0] = 0
+reg[5] = 3
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 5, id_ex.rs1: 0
+mem_wb.reg_write: 0, mem_wb.rd: 0, id_ex.rs1: 0
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+valA: 0, valB: 0
+JAL to PC=4
+id_ex.mem_read at end of ID: 0
+Cycle 29: ID decoded 11111111000111111111000001101111
+Cycle 29: IF fetched 00000000101000101000001100110011 at PC=4
+Cycle 30: WB no write
+ex_mem.mem_read: 0
+Cycle 30: MEM passed rd_val=4
+ex_mem.rd: 0, id_ex.rs1: 0, id_ex.rs2: 0, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 30: EX computed return address 24 for jal/jalr
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+Instruction in binary: 00000000101000101000001100110011
+opcode: 0110011, funct3: 000, funct7: 0000000
+R-type: rd=6, rs1=5, rs2=10
+reg[0] = 0
+reg[5] = 3
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 3, Data 2(rs2): 1024
+ex_mem.reg_write: 1, ex_mem.rd: 0, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 5, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+ID Forwarding MEM/WB to valA: 4
+valA: 4, valB: 1024
+id_ex.mem_read at end of ID: 0
+Cycle 30: ID decoded 00000000101000101000001100110011
+Cycle 30: IF fetched 00000000101000101000001100110011 at PC=4
+Cycle 31: WB wrote 4 to reg 5
+x5 = 4, x6 = 0
+ex_mem.mem_read: 0
+Cycle 31: MEM passed rd_val=24
+ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
+Forwarding MEM/WB to valA: 24
+valA is coming from MEM/WB stage
+valB is coming from ID/EX stage
+Cycle 31: EX computed 1048 (valA=24, operand2=1024, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+Instruction in binary: 00000000101000101000001100110011
+opcode: 0110011, funct3: 000, funct7: 0000000
+R-type: rd=6, rs1=5, rs2=10
+reg[0] = 0
+reg[5] = 4
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 4, Data 2(rs2): 1024
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 0, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+valA: 4, valB: 1024
+id_ex.mem_read at end of ID: 0
+Cycle 31: ID decoded 00000000101000101000001100110011
+Cycle 31: IF fetched 00000000000000110000001100000011 at PC=8
+Cycle 32: WB no write
+ex_mem.mem_read: 0
+Cycle 32: MEM passed rd_val=1048
+ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 32: EX computed 1028 (valA=4, operand2=1024, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+Instruction in binary: 00000000000000110000001100000011
+opcode: 0000011, funct3: 000, funct7: 0000000
+Load: rd=6, rs1=6, imm: 0
+id_ex.mem_read: 1
+reg[0] = 0
+reg[5] = 4
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 6
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 6
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+ID Forwarding EX/MEM to valA: 1028
+valA: 1028, valB: 0
+id_ex.mem_read at end of ID: 1
+Cycle 32: ID decoded 00000000000000110000001100000011
+Cycle 32: IF fetched 00000000000000110000011001100011 at PC=12
+Cycle 33: WB wrote 1048 to reg 6
+x5 = 4, x6 = 1048
+ex_mem.mem_read: 0
+Cycle 33: MEM passed rd_val=1028
+ex_mem.rd: 6, id_ex.rs1: 6, id_ex.rs2: 0, ex_mem.reg_write: 1
+Forwarding EX/MEM to valA: 1028
+valA is coming from EX/MEM stage
+valB is coming from ID/EX stage
+Cycle 33: EX computed 1028 (valA=1028, operand2=0, add)
+Cycle 33: ID stalled due to load-use hazard
+id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Cycle 33: ID stalled due to branch hazard level1
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Cycle 33: ID stalled due to branch hazard level2
+Cycle 33: IF fetched 00000000000000110000011001100011 at PC=12
+Cycle 34: WB wrote 1028 to reg 6
+x5 = 4, x6 = 1028
+ex_mem.mem_read: 1
+MEM Forwarding rs1 from WB/IF: 6
+Cycle 34: MEM read from addr 0, data=0
+Cycle 34: EX stage invalid
+id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+ex_mem.valid: 0, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Instruction in binary: 00000000000000110000011001100011
+opcode: 1100011, funct3: 000, funct7: 0000000
+SB-type: rs1=6, rs2=0, imm=12
+reg[0] = 0
+reg[5] = 4
+reg[6] = 1028
+reg[10] = 1024
+Data 1(rs1): 1028, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 6
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 6
+ex_mem.mem_read: 1, mem_wb.mem_read: 1
+ID Forwarding EX/MEM to valA: 1028
+valA: 1028, valB: 0
+BEQ: valA=1028, valB=0, take_branch=0
+id_ex.mem_read at end of ID: 0
+Cycle 34: ID decoded 00000000000000110000011001100011
+Cycle 34: IF fetched 00000000000100101000001010010011 at PC=16
+Cycle 35: WB wrote 0 to reg 6
+x5 = 4, x6 = 0
+Cycle 35: MEM stage invalid
+ex_mem.rd: 0, id_ex.rs1: 6, id_ex.rs2: 0, ex_mem.reg_write: 0
+Forwarding EX/MEM to valA: 1028
+valA is coming from EX/MEM stage
+valB is coming from ID/EX stage
+Cycle 35: EX computed branch target 24 for beq
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+Instruction in binary: 00000000000100101000001010010011
+opcode: 0010011, funct3: 000, funct7: 0000000
+I-type rd: 5, rs1: 5, imm: 1
+reg[0] = 0
+reg[5] = 4
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 4, Data 2(rs2): 0
+ex_mem.reg_write: 0, ex_mem.rd: 0, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 1
+valA: 4, valB: 0
+id_ex.mem_read at end of ID: 0
+Cycle 35: ID decoded 00000000000100101000001010010011
+Cycle 35: IF fetched 11111111000111111111000001101111 at PC=20
+Cycle 36: WB stage invalid
+ex_mem.mem_read: 0
+Cycle 36: MEM passed rd_val=24
+ex_mem.rd: 5, id_ex.rs1: 5, id_ex.rs2: 0, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 36: EX computed 5 (valA=4, operand2=1, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+Instruction in binary: 11111111000111111111000001101111
+opcode: 1101111, funct3: 111, funct7: 1111111
+J-type jal: rd=0, imm=-16
+reg[0] = 0
+reg[5] = 4
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 5, id_ex.rs1: 0
+mem_wb.reg_write: 0, mem_wb.rd: 0, id_ex.rs1: 0
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+valA: 0, valB: 0
+JAL to PC=4
+id_ex.mem_read at end of ID: 0
+Cycle 36: ID decoded 11111111000111111111000001101111
+Cycle 36: IF fetched 00000000101000101000001100110011 at PC=4
+Cycle 37: WB no write
+ex_mem.mem_read: 0
+Cycle 37: MEM passed rd_val=5
+ex_mem.rd: 0, id_ex.rs1: 0, id_ex.rs2: 0, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 37: EX computed return address 24 for jal/jalr
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+Instruction in binary: 00000000101000101000001100110011
+opcode: 0110011, funct3: 000, funct7: 0000000
+R-type: rd=6, rs1=5, rs2=10
+reg[0] = 0
+reg[5] = 4
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 4, Data 2(rs2): 1024
+ex_mem.reg_write: 1, ex_mem.rd: 0, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 5, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+ID Forwarding MEM/WB to valA: 5
+valA: 5, valB: 1024
+id_ex.mem_read at end of ID: 0
+Cycle 37: ID decoded 00000000101000101000001100110011
+Cycle 37: IF fetched 00000000101000101000001100110011 at PC=4
+Cycle 38: WB wrote 5 to reg 5
+x5 = 5, x6 = 0
+ex_mem.mem_read: 0
+Cycle 38: MEM passed rd_val=24
+ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
+Forwarding MEM/WB to valA: 24
+valA is coming from MEM/WB stage
+valB is coming from ID/EX stage
+Cycle 38: EX computed 1048 (valA=24, operand2=1024, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+Instruction in binary: 00000000101000101000001100110011
+opcode: 0110011, funct3: 000, funct7: 0000000
+R-type: rd=6, rs1=5, rs2=10
+reg[0] = 0
+reg[5] = 5
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 5, Data 2(rs2): 1024
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 5
+mem_wb.reg_write: 1, mem_wb.rd: 0, id_ex.rs1: 5
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+valA: 5, valB: 1024
+id_ex.mem_read at end of ID: 0
+Cycle 38: ID decoded 00000000101000101000001100110011
+Cycle 38: IF fetched 00000000000000110000001100000011 at PC=8
+Cycle 39: WB no write
+ex_mem.mem_read: 0
+Cycle 39: MEM passed rd_val=1048
+ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
+valA is coming from ID/EX stage
+valB is coming from ID/EX stage
+Cycle 39: EX computed 1029 (valA=5, operand2=1024, add)
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+Instruction in binary: 00000000000000110000001100000011
+opcode: 0000011, funct3: 000, funct7: 0000000
+Load: rd=6, rs1=6, imm: 0
+id_ex.mem_read: 1
+reg[0] = 0
+reg[5] = 5
+reg[6] = 0
+reg[10] = 1024
+Data 1(rs1): 0, Data 2(rs2): 0
+ex_mem.reg_write: 1, ex_mem.rd: 6, id_ex.rs1: 6
+mem_wb.reg_write: 1, mem_wb.rd: 6, id_ex.rs1: 6
+ex_mem.mem_read: 0, mem_wb.mem_read: 0
+ID Forwarding EX/MEM to valA: 1029
+valA: 1029, valB: 0
+id_ex.mem_read at end of ID: 1
+Cycle 39: ID decoded 00000000000000110000001100000011
+Cycle 39: IF fetched 00000000000000110000011001100011 at PC=12
+Cycle 40: WB wrote 1048 to reg 6
+x5 = 5, x6 = 1048
+ex_mem.mem_read: 0
+Cycle 40: MEM passed rd_val=1029
+ex_mem.rd: 6, id_ex.rs1: 6, id_ex.rs2: 0, ex_mem.reg_write: 1
+Forwarding EX/MEM to valA: 1029
+valA is coming from EX/MEM stage
+valB is coming from ID/EX stage
+Cycle 40: EX computed 1029 (valA=1029, operand2=0, add)
+Cycle 40: ID stalled due to load-use hazard
+id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Cycle 40: ID stalled due to branch hazard level1
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+Cycle 40: ID stalled due to branch hazard level2
+Cycle 40: IF fetched 00000000000000110000011001100011 at PC=12
+Final a0 (length): 1024
