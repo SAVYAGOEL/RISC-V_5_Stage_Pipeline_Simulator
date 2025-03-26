@@ -8,7 +8,7 @@ SRCS = main.cpp processor.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 # Executable name
-TARGET = noforward
+TARGET = noforward forward
 
 # Default target
 all: $(TARGET)
