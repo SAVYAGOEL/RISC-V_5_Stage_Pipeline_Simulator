@@ -180,7 +180,7 @@ void instruction_decode(int cycle) {
         cout << "Cycle " << cycle << ": ID stalled due to load-use hazard" << endl;
     }
 
-    cout << "id_ex.valid: " << id_ex.valid << ", id_ex.mem_read: " << id_ex.mem_read << ", id_ex.rd: " << id_ex.rd << ", rs1: " << rs1 << ", rs2: " << rs2 << ", opcode: " << opcode << endl;
+    cout << "id_ex.valid: " << id_ex.valid << ", id_ex.mem_read: " << id_ex.mem_read << ", id_ex.rd: " << id_ex.rd << ", rs1: " << rs1 << ", rs2: " << rs2 << ", opcode: " << opcode << ", prev_opcode: " << prev_opcode << endl;
     //case when current instruction is branch type and depends on previous instruction
     if (id_ex.valid && id_ex.reg_write && (id_ex.rd == rs1 || id_ex.rd == rs2) && (opcode.to_ulong() == 0b1100011)) {
         stall = true;
@@ -188,7 +188,7 @@ void instruction_decode(int cycle) {
     }
 
     //case when current instr is branch type, it depends on prev to prev instr and prev to prev instr is load type
-    cout << "ex_mem.valid: " << ex_mem.valid << ", ex_mem.mem_read: " << ex_mem.mem_read << ", ex_mem.rd: " << ex_mem.rd << ", rs1: " << rs1 << ", rs2: " << rs2 << ", opcode: " << opcode << endl;
+    cout << "ex_mem.valid: " << mem_wb.valid << ", ex_mem.mem_read: " << ex_mem.mem_read << ", ex_mem.rd: " << ex_mem.rd << ", rs1: " << rs1 << ", rs2: " << rs2 << ", opcode: " << opcode << ", prev_prev_opcode: " << prev2_opcode << endl;
     if (ex_mem.valid && ex_mem.mem_read && (ex_mem.rd == rs1 || ex_mem.rd == rs2) && (opcode.to_ulong() == 0b1100011)) {
         stall = true;
         cout << "Cycle " << cycle << ": ID stalled due to branch hazard level2" << endl;
@@ -416,13 +416,7 @@ void instruction_decode(int cycle) {
 }
 
 void execute(int cycle) {
-    if (!id_ex.valid) {
-        ex_mem.valid = false;
-        cout << "Cycle " << cycle << ": EX stage invalid" << endl;
-        return;
-    }
 
-    // Update ex_mem with current instruction's control signals *first*
     ex_mem.inst = id_ex.inst;
     ex_mem.pc = id_ex.pc;
     ex_mem.rs1 = id_ex.rs1;
@@ -434,6 +428,15 @@ void execute(int cycle) {
     ex_mem.mem_to_reg = id_ex.mem_to_reg;
     ex_mem.reg_write = id_ex.reg_write;
     ex_mem.valid = id_ex.valid;
+
+    if (!id_ex.valid) {
+        ex_mem.valid = false;
+        cout << "Cycle " << cycle << ": EX stage invalid" << endl;
+        return;
+    }
+
+    // Update ex_mem with current instruction's control signals *first*
+    
 
     // Forwarding logic *after* updating ex_mem
     fwd_unit.fwdA = 0;
@@ -553,11 +556,6 @@ void execute(int cycle) {
 }
 
 void memory(int cycle) {
-    if (!ex_mem.valid) {
-        mem_wb.valid = false;
-        cout << "Cycle " << cycle << ": MEM stage invalid" << endl;
-        return;
-    }
 
     mem_wb.inst = ex_mem.inst;
     mem_wb.rs1 = ex_mem.rs1;
@@ -568,6 +566,12 @@ void memory(int cycle) {
     mem_wb.mem_to_reg = ex_mem.mem_to_reg;
     mem_wb.reg_write = ex_mem.reg_write;
     mem_wb.valid = ex_mem.valid;
+
+    if (!ex_mem.valid) {
+        mem_wb.valid = false;
+        cout << "Cycle " << cycle << ": MEM stage invalid" << endl;
+        return;
+    }
 
     cout << "ex_mem.mem_read: " << ex_mem.mem_read << endl;
     if (ex_mem.mem_read) {
@@ -600,10 +604,6 @@ void memory(int cycle) {
 }
 
 void write_back(int cycle) {
-    if (!mem_wb.valid) {
-        cout << "Cycle " << cycle << ": WB stage invalid" << endl;
-        return;
-    }
 
     wb_if.inst = mem_wb.inst;
     wb_if.rs1 = mem_wb.rs1;
@@ -615,6 +615,11 @@ void write_back(int cycle) {
     wb_if.mem_to_reg = mem_wb.mem_to_reg;
     wb_if.reg_write = mem_wb.reg_write;
     wb_if.valid = mem_wb.valid;
+
+    if (!mem_wb.valid) {
+        cout << "Cycle " << cycle << ": WB stage invalid" << endl;
+        return;
+    }
 
     if (mem_wb.reg_write && mem_wb.rd != 0) {
         reg[mem_wb.rd] = mem_wb.mem_to_reg ? mem_wb.mem_data : mem_wb.rd_val;

@@ -14,8 +14,8 @@ Cycle 1: IF fetched 00000000000000000001001010010011 at PC=0
 Cycle 2: WB stage invalid
 Cycle 2: MEM stage invalid
 Cycle 2: EX stage invalid
-id_ex.valid: 0, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 0, rs2: 0, opcode: 0010011
-ex_mem.valid: 0, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 0, rs2: 0, opcode: 0010011
+id_ex.valid: 0, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 0, rs2: 0, opcode: 0010011, prev_opcode: 0000000
+ex_mem.valid: 0, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 0, rs2: 0, opcode: 0010011, prev_prev_opcode: 0000000
 Instruction in binary: 00000000000000000001001010010011
 opcode: 0010011, funct3: 001, funct7: 0000000
 I-type rd: 5, rs1: 0, imm: 0
@@ -37,8 +37,8 @@ ex_mem.rd: 5, id_ex.rs1: 0, id_ex.rs2: 0, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 3: EX computed 0 (valA=0, operand2=0, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 5, rs2: 10, opcode: 0110011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 5, rs2: 10, opcode: 0110011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 5, rs2: 10, opcode: 0110011, prev_opcode: 0010011
+ex_mem.valid: 0, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 5, rs2: 10, opcode: 0110011, prev_prev_opcode: 0010011
 Instruction in binary: 00000000101000101000001100110011
 opcode: 0110011, funct3: 000, funct7: 0000000
 R-type: rd=6, rs1=5, rs2=10
@@ -63,8 +63,8 @@ Forwarding EX/MEM to valA: 0
 valA is coming from EX/MEM stage
 valB is coming from ID/EX stage
 Cycle 4: EX computed 1024 (valA=0, operand2=1024, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011, prev_opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011, prev_prev_opcode: 0110011
 Instruction in binary: 00000000000000110000001100000011
 opcode: 0000011, funct3: 000, funct7: 0000000
 Load: rd=6, rs1=6, imm: 0
@@ -92,9 +92,9 @@ valA is coming from EX/MEM stage
 valB is coming from ID/EX stage
 Cycle 5: EX computed 1024 (valA=1024, operand2=0, add)
 Cycle 5: ID stalled due to load-use hazard
-id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_opcode: 0000011
 Cycle 5: ID stalled due to branch hazard level1
-ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_prev_opcode: 0000011
 Cycle 5: ID stalled due to branch hazard level2
 Cycle 5: IF fetched 00000000000000110000011001100011 at PC=12
 Cycle 6: WB wrote 1024 to reg 6
@@ -103,8 +103,8 @@ ex_mem.mem_read: 1
 MEM Forwarding rs1 from WB/IF: 6
 Cycle 6: MEM read from addr 0, data=0
 Cycle 6: EX stage invalid
-id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
-ex_mem.valid: 0, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_opcode: 0000011
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_prev_opcode: 0000011
 Instruction in binary: 00000000000000110000011001100011
 opcode: 1100011, funct3: 000, funct7: 0000000
 SB-type: rs1=6, rs2=0, imm=12
@@ -130,8 +130,8 @@ Forwarding EX/MEM to valA: 1024
 valA is coming from EX/MEM stage
 valB is coming from ID/EX stage
 Cycle 7: EX computed branch target 24 for beq
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011, prev_opcode: 1100011
+ex_mem.valid: 0, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011, prev_prev_opcode: 1100011
 Instruction in binary: 00000000000100101000001010010011
 opcode: 0010011, funct3: 000, funct7: 0000000
 I-type rd: 5, rs1: 5, imm: 1
@@ -154,8 +154,8 @@ ex_mem.rd: 5, id_ex.rs1: 5, id_ex.rs2: 0, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 8: EX computed 1 (valA=0, operand2=1, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111, prev_opcode: 0010011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111, prev_prev_opcode: 0010011
 Instruction in binary: 11111111000111111111000001101111
 opcode: 1101111, funct3: 111, funct7: 1111111
 J-type jal: rd=0, imm=-16
@@ -179,8 +179,8 @@ ex_mem.rd: 0, id_ex.rs1: 0, id_ex.rs2: 0, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 9: EX computed return address 24 for jal/jalr
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011, prev_opcode: 1101111
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011, prev_prev_opcode: 1101111
 Instruction in binary: 00000000101000101000001100110011
 opcode: 0110011, funct3: 000, funct7: 0000000
 R-type: rd=6, rs1=5, rs2=10
@@ -206,8 +206,8 @@ Forwarding MEM/WB to valA: 24
 valA is coming from MEM/WB stage
 valB is coming from ID/EX stage
 Cycle 10: EX computed 1048 (valA=24, operand2=1024, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011, prev_opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011, prev_prev_opcode: 0110011
 Instruction in binary: 00000000101000101000001100110011
 opcode: 0110011, funct3: 000, funct7: 0000000
 R-type: rd=6, rs1=5, rs2=10
@@ -230,8 +230,8 @@ ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 11: EX computed 1025 (valA=1, operand2=1024, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011, prev_opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011, prev_prev_opcode: 0110011
 Instruction in binary: 00000000000000110000001100000011
 opcode: 0000011, funct3: 000, funct7: 0000000
 Load: rd=6, rs1=6, imm: 0
@@ -259,9 +259,9 @@ valA is coming from EX/MEM stage
 valB is coming from ID/EX stage
 Cycle 12: EX computed 1025 (valA=1025, operand2=0, add)
 Cycle 12: ID stalled due to load-use hazard
-id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_opcode: 0000011
 Cycle 12: ID stalled due to branch hazard level1
-ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_prev_opcode: 0000011
 Cycle 12: ID stalled due to branch hazard level2
 Cycle 12: IF fetched 00000000000000110000011001100011 at PC=12
 Cycle 13: WB wrote 1025 to reg 6
@@ -270,8 +270,8 @@ ex_mem.mem_read: 1
 MEM Forwarding rs1 from WB/IF: 6
 Cycle 13: MEM read from addr 0, data=0
 Cycle 13: EX stage invalid
-id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
-ex_mem.valid: 0, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_opcode: 0000011
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_prev_opcode: 0000011
 Instruction in binary: 00000000000000110000011001100011
 opcode: 1100011, funct3: 000, funct7: 0000000
 SB-type: rs1=6, rs2=0, imm=12
@@ -297,8 +297,8 @@ Forwarding EX/MEM to valA: 1025
 valA is coming from EX/MEM stage
 valB is coming from ID/EX stage
 Cycle 14: EX computed branch target 24 for beq
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011, prev_opcode: 1100011
+ex_mem.valid: 0, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011, prev_prev_opcode: 1100011
 Instruction in binary: 00000000000100101000001010010011
 opcode: 0010011, funct3: 000, funct7: 0000000
 I-type rd: 5, rs1: 5, imm: 1
@@ -321,8 +321,8 @@ ex_mem.rd: 5, id_ex.rs1: 5, id_ex.rs2: 0, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 15: EX computed 2 (valA=1, operand2=1, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111, prev_opcode: 0010011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111, prev_prev_opcode: 0010011
 Instruction in binary: 11111111000111111111000001101111
 opcode: 1101111, funct3: 111, funct7: 1111111
 J-type jal: rd=0, imm=-16
@@ -346,8 +346,8 @@ ex_mem.rd: 0, id_ex.rs1: 0, id_ex.rs2: 0, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 16: EX computed return address 24 for jal/jalr
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011, prev_opcode: 1101111
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011, prev_prev_opcode: 1101111
 Instruction in binary: 00000000101000101000001100110011
 opcode: 0110011, funct3: 000, funct7: 0000000
 R-type: rd=6, rs1=5, rs2=10
@@ -373,8 +373,8 @@ Forwarding MEM/WB to valA: 24
 valA is coming from MEM/WB stage
 valB is coming from ID/EX stage
 Cycle 17: EX computed 1048 (valA=24, operand2=1024, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011, prev_opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011, prev_prev_opcode: 0110011
 Instruction in binary: 00000000101000101000001100110011
 opcode: 0110011, funct3: 000, funct7: 0000000
 R-type: rd=6, rs1=5, rs2=10
@@ -397,8 +397,8 @@ ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 18: EX computed 1026 (valA=2, operand2=1024, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011, prev_opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011, prev_prev_opcode: 0110011
 Instruction in binary: 00000000000000110000001100000011
 opcode: 0000011, funct3: 000, funct7: 0000000
 Load: rd=6, rs1=6, imm: 0
@@ -426,9 +426,9 @@ valA is coming from EX/MEM stage
 valB is coming from ID/EX stage
 Cycle 19: EX computed 1026 (valA=1026, operand2=0, add)
 Cycle 19: ID stalled due to load-use hazard
-id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_opcode: 0000011
 Cycle 19: ID stalled due to branch hazard level1
-ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_prev_opcode: 0000011
 Cycle 19: ID stalled due to branch hazard level2
 Cycle 19: IF fetched 00000000000000110000011001100011 at PC=12
 Cycle 20: WB wrote 1026 to reg 6
@@ -437,8 +437,8 @@ ex_mem.mem_read: 1
 MEM Forwarding rs1 from WB/IF: 6
 Cycle 20: MEM read from addr 0, data=0
 Cycle 20: EX stage invalid
-id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
-ex_mem.valid: 0, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_opcode: 0000011
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_prev_opcode: 0000011
 Instruction in binary: 00000000000000110000011001100011
 opcode: 1100011, funct3: 000, funct7: 0000000
 SB-type: rs1=6, rs2=0, imm=12
@@ -464,8 +464,8 @@ Forwarding EX/MEM to valA: 1026
 valA is coming from EX/MEM stage
 valB is coming from ID/EX stage
 Cycle 21: EX computed branch target 24 for beq
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011, prev_opcode: 1100011
+ex_mem.valid: 0, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011, prev_prev_opcode: 1100011
 Instruction in binary: 00000000000100101000001010010011
 opcode: 0010011, funct3: 000, funct7: 0000000
 I-type rd: 5, rs1: 5, imm: 1
@@ -488,8 +488,8 @@ ex_mem.rd: 5, id_ex.rs1: 5, id_ex.rs2: 0, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 22: EX computed 3 (valA=2, operand2=1, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111, prev_opcode: 0010011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111, prev_prev_opcode: 0010011
 Instruction in binary: 11111111000111111111000001101111
 opcode: 1101111, funct3: 111, funct7: 1111111
 J-type jal: rd=0, imm=-16
@@ -513,8 +513,8 @@ ex_mem.rd: 0, id_ex.rs1: 0, id_ex.rs2: 0, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 23: EX computed return address 24 for jal/jalr
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011, prev_opcode: 1101111
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011, prev_prev_opcode: 1101111
 Instruction in binary: 00000000101000101000001100110011
 opcode: 0110011, funct3: 000, funct7: 0000000
 R-type: rd=6, rs1=5, rs2=10
@@ -540,8 +540,8 @@ Forwarding MEM/WB to valA: 24
 valA is coming from MEM/WB stage
 valB is coming from ID/EX stage
 Cycle 24: EX computed 1048 (valA=24, operand2=1024, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011, prev_opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011, prev_prev_opcode: 0110011
 Instruction in binary: 00000000101000101000001100110011
 opcode: 0110011, funct3: 000, funct7: 0000000
 R-type: rd=6, rs1=5, rs2=10
@@ -564,8 +564,8 @@ ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 25: EX computed 1027 (valA=3, operand2=1024, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011, prev_opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011, prev_prev_opcode: 0110011
 Instruction in binary: 00000000000000110000001100000011
 opcode: 0000011, funct3: 000, funct7: 0000000
 Load: rd=6, rs1=6, imm: 0
@@ -593,9 +593,9 @@ valA is coming from EX/MEM stage
 valB is coming from ID/EX stage
 Cycle 26: EX computed 1027 (valA=1027, operand2=0, add)
 Cycle 26: ID stalled due to load-use hazard
-id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_opcode: 0000011
 Cycle 26: ID stalled due to branch hazard level1
-ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_prev_opcode: 0000011
 Cycle 26: ID stalled due to branch hazard level2
 Cycle 26: IF fetched 00000000000000110000011001100011 at PC=12
 Cycle 27: WB wrote 1027 to reg 6
@@ -604,8 +604,8 @@ ex_mem.mem_read: 1
 MEM Forwarding rs1 from WB/IF: 6
 Cycle 27: MEM read from addr 0, data=0
 Cycle 27: EX stage invalid
-id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
-ex_mem.valid: 0, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_opcode: 0000011
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_prev_opcode: 0000011
 Instruction in binary: 00000000000000110000011001100011
 opcode: 1100011, funct3: 000, funct7: 0000000
 SB-type: rs1=6, rs2=0, imm=12
@@ -631,8 +631,8 @@ Forwarding EX/MEM to valA: 1027
 valA is coming from EX/MEM stage
 valB is coming from ID/EX stage
 Cycle 28: EX computed branch target 24 for beq
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011, prev_opcode: 1100011
+ex_mem.valid: 0, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011, prev_prev_opcode: 1100011
 Instruction in binary: 00000000000100101000001010010011
 opcode: 0010011, funct3: 000, funct7: 0000000
 I-type rd: 5, rs1: 5, imm: 1
@@ -655,8 +655,8 @@ ex_mem.rd: 5, id_ex.rs1: 5, id_ex.rs2: 0, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 29: EX computed 4 (valA=3, operand2=1, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111, prev_opcode: 0010011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111, prev_prev_opcode: 0010011
 Instruction in binary: 11111111000111111111000001101111
 opcode: 1101111, funct3: 111, funct7: 1111111
 J-type jal: rd=0, imm=-16
@@ -680,8 +680,8 @@ ex_mem.rd: 0, id_ex.rs1: 0, id_ex.rs2: 0, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 30: EX computed return address 24 for jal/jalr
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011, prev_opcode: 1101111
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011, prev_prev_opcode: 1101111
 Instruction in binary: 00000000101000101000001100110011
 opcode: 0110011, funct3: 000, funct7: 0000000
 R-type: rd=6, rs1=5, rs2=10
@@ -707,8 +707,8 @@ Forwarding MEM/WB to valA: 24
 valA is coming from MEM/WB stage
 valB is coming from ID/EX stage
 Cycle 31: EX computed 1048 (valA=24, operand2=1024, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011, prev_opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011, prev_prev_opcode: 0110011
 Instruction in binary: 00000000101000101000001100110011
 opcode: 0110011, funct3: 000, funct7: 0000000
 R-type: rd=6, rs1=5, rs2=10
@@ -731,8 +731,8 @@ ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 32: EX computed 1028 (valA=4, operand2=1024, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011, prev_opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011, prev_prev_opcode: 0110011
 Instruction in binary: 00000000000000110000001100000011
 opcode: 0000011, funct3: 000, funct7: 0000000
 Load: rd=6, rs1=6, imm: 0
@@ -760,9 +760,9 @@ valA is coming from EX/MEM stage
 valB is coming from ID/EX stage
 Cycle 33: EX computed 1028 (valA=1028, operand2=0, add)
 Cycle 33: ID stalled due to load-use hazard
-id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_opcode: 0000011
 Cycle 33: ID stalled due to branch hazard level1
-ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_prev_opcode: 0000011
 Cycle 33: ID stalled due to branch hazard level2
 Cycle 33: IF fetched 00000000000000110000011001100011 at PC=12
 Cycle 34: WB wrote 1028 to reg 6
@@ -771,8 +771,8 @@ ex_mem.mem_read: 1
 MEM Forwarding rs1 from WB/IF: 6
 Cycle 34: MEM read from addr 0, data=0
 Cycle 34: EX stage invalid
-id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
-ex_mem.valid: 0, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+id_ex.valid: 0, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_opcode: 0000011
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_prev_opcode: 0000011
 Instruction in binary: 00000000000000110000011001100011
 opcode: 1100011, funct3: 000, funct7: 0000000
 SB-type: rs1=6, rs2=0, imm=12
@@ -798,8 +798,8 @@ Forwarding EX/MEM to valA: 1028
 valA is coming from EX/MEM stage
 valB is coming from ID/EX stage
 Cycle 35: EX computed branch target 24 for beq
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 1, opcode: 0010011, prev_opcode: 1100011
+ex_mem.valid: 0, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 1, opcode: 0010011, prev_prev_opcode: 1100011
 Instruction in binary: 00000000000100101000001010010011
 opcode: 0010011, funct3: 000, funct7: 0000000
 I-type rd: 5, rs1: 5, imm: 1
@@ -822,8 +822,8 @@ ex_mem.rd: 5, id_ex.rs1: 5, id_ex.rs2: 0, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 36: EX computed 5 (valA=4, operand2=1, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 5, rs1: 31, rs2: 17, opcode: 1101111, prev_opcode: 0010011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 5, rs1: 31, rs2: 17, opcode: 1101111, prev_prev_opcode: 0010011
 Instruction in binary: 11111111000111111111000001101111
 opcode: 1101111, funct3: 111, funct7: 1111111
 J-type jal: rd=0, imm=-16
@@ -847,8 +847,8 @@ ex_mem.rd: 0, id_ex.rs1: 0, id_ex.rs2: 0, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 37: EX computed return address 24 for jal/jalr
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 0, rs1: 5, rs2: 10, opcode: 0110011, prev_opcode: 1101111
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 0, rs1: 5, rs2: 10, opcode: 0110011, prev_prev_opcode: 1101111
 Instruction in binary: 00000000101000101000001100110011
 opcode: 0110011, funct3: 000, funct7: 0000000
 R-type: rd=6, rs1=5, rs2=10
@@ -874,8 +874,8 @@ Forwarding MEM/WB to valA: 24
 valA is coming from MEM/WB stage
 valB is coming from ID/EX stage
 Cycle 38: EX computed 1048 (valA=24, operand2=1024, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 5, rs2: 10, opcode: 0110011, prev_opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 5, rs2: 10, opcode: 0110011, prev_prev_opcode: 0110011
 Instruction in binary: 00000000101000101000001100110011
 opcode: 0110011, funct3: 000, funct7: 0000000
 R-type: rd=6, rs1=5, rs2=10
@@ -898,8 +898,8 @@ ex_mem.rd: 6, id_ex.rs1: 5, id_ex.rs2: 10, ex_mem.reg_write: 1
 valA is coming from ID/EX stage
 valB is coming from ID/EX stage
 Cycle 39: EX computed 1029 (valA=5, operand2=1024, add)
-id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
-ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011
+id_ex.valid: 1, id_ex.mem_read: 0, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 0000011, prev_opcode: 0110011
+ex_mem.valid: 1, ex_mem.mem_read: 0, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 0000011, prev_prev_opcode: 0110011
 Instruction in binary: 00000000000000110000001100000011
 opcode: 0000011, funct3: 000, funct7: 0000000
 Load: rd=6, rs1=6, imm: 0
@@ -927,9 +927,9 @@ valA is coming from EX/MEM stage
 valB is coming from ID/EX stage
 Cycle 40: EX computed 1029 (valA=1029, operand2=0, add)
 Cycle 40: ID stalled due to load-use hazard
-id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+id_ex.valid: 1, id_ex.mem_read: 1, id_ex.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_opcode: 0000011
 Cycle 40: ID stalled due to branch hazard level1
-ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011
+ex_mem.valid: 1, ex_mem.mem_read: 1, ex_mem.rd: 6, rs1: 6, rs2: 0, opcode: 1100011, prev_prev_opcode: 0000011
 Cycle 40: ID stalled due to branch hazard level2
 Cycle 40: IF fetched 00000000000000110000011001100011 at PC=12
 Final a0 (length): 1024
