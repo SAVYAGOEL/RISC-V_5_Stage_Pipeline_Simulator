@@ -16,204 +16,194 @@ Cycle 3: IF fetched instruction at PC=8
 Cycle 4: WB stage invalid
 Cycle 4: MEM stage processed
 Cycle 4: EX stage processed
-Cycle 4: ID stalled due to load-use hazard
 Cycle 4: ID decoded instruction
-Cycle 4: IF stalled
+Cycle 4: IF fetched instruction at PC=12
 Cycle 5: WB wrote to reg 5
 Cycle 5: MEM stage processed
 Cycle 5: EX stage processed
-Cycle 5: ID stalled
+Cycle 5: ID stalled due to branch load hazard (1 stall)
 Cycle 5: IF stalled
 Cycle 6: WB wrote to reg 6
 Cycle 6: MEM stage processed
 Cycle 6: EX stage invalid
-Cycle 6: ID stalled due to load-use hazard
-Cycle 6: ID decoded instruction
+Cycle 6: ID stalled
 Cycle 6: IF stalled
 Cycle 7: WB wrote to reg 6
 Cycle 7: MEM stage invalid
-Cycle 7: EX stage processed
-Cycle 7: ID stalled
-Cycle 7: IF stalled
+Cycle 7: EX stage invalid
+Cycle 7: Branch detected, assuming not taken
+Cycle 7: ID decoded instruction
+Cycle 7: IF fetched instruction at PC=16
 Cycle 8: WB stage invalid
-Cycle 8: MEM stage processed
-Cycle 8: EX stage invalid
-Cycle 8: ID stalled due to load-use hazard
+Cycle 8: MEM stage invalid
+Cycle 8: EX stage processed
 Cycle 8: ID decoded instruction
-Cycle 8: IF stalled
-Cycle 9: WB wrote to reg 6
-Cycle 9: MEM stage invalid
+Cycle 8: IF fetched instruction at PC=20
+Cycle 9: WB stage invalid
+Cycle 9: MEM stage processed
 Cycle 9: EX stage processed
-Cycle 9: ID stalled
-Cycle 9: IF stalled
-Cycle 10: WB stage invalid
+Cycle 9: Jump to PC=4
+Cycle 9: ID decoded instruction
+Cycle 9: IF fetched instruction at PC=24
+Cycle 10: WB processed 
 Cycle 10: MEM stage processed
-Cycle 10: EX stage invalid
-Cycle 10: ID stalled due to load-use hazard
+Cycle 10: EX stage processed
 Cycle 10: ID decoded instruction
-Cycle 10: IF stalled
-Cycle 11: WB wrote to reg 6
-Cycle 11: MEM stage invalid
+Cycle 10: IF fetched instruction at PC=4
+Cycle 11: WB wrote to reg 5
+Cycle 11: MEM stage processed
 Cycle 11: EX stage processed
-Cycle 11: ID stalled
-Cycle 11: IF stalled
-Cycle 12: WB stage invalid
+Cycle 11: ID decoded instruction
+Cycle 11: IF fetched instruction at PC=8
+Cycle 12: WB processed 
 Cycle 12: MEM stage processed
-Cycle 12: EX stage invalid
-Cycle 12: ID stalled due to load-use hazard
+Cycle 12: EX stage processed
 Cycle 12: ID decoded instruction
-Cycle 12: IF stalled
-Cycle 13: WB wrote to reg 6
-Cycle 13: MEM stage invalid
+Cycle 12: IF fetched instruction at PC=12
+Cycle 13: WB wrote to reg 10
+Cycle 13: MEM stage processed
 Cycle 13: EX stage processed
-Cycle 13: ID stalled
+Cycle 13: ID stalled due to branch load hazard (1 stall)
 Cycle 13: IF stalled
-Cycle 14: WB stage invalid
+Cycle 14: WB wrote to reg 6
 Cycle 14: MEM stage processed
 Cycle 14: EX stage invalid
-Cycle 14: ID stalled due to load-use hazard
-Cycle 14: ID decoded instruction
+Cycle 14: ID stalled
 Cycle 14: IF stalled
 Cycle 15: WB wrote to reg 6
 Cycle 15: MEM stage invalid
-Cycle 15: EX stage processed
-Cycle 15: ID stalled
-Cycle 15: IF stalled
+Cycle 15: EX stage invalid
+Cycle 15: Branch detected, assuming not taken
+Cycle 15: ID decoded instruction
+Cycle 15: IF fetched instruction at PC=16
 Cycle 16: WB stage invalid
-Cycle 16: MEM stage processed
-Cycle 16: EX stage invalid
-Cycle 16: ID stalled due to load-use hazard
+Cycle 16: MEM stage invalid
+Cycle 16: EX stage processed
 Cycle 16: ID decoded instruction
-Cycle 16: IF stalled
-Cycle 17: WB wrote to reg 6
-Cycle 17: MEM stage invalid
+Cycle 16: IF fetched instruction at PC=20
+Cycle 17: WB stage invalid
+Cycle 17: MEM stage processed
 Cycle 17: EX stage processed
-Cycle 17: ID stalled
-Cycle 17: IF stalled
-Cycle 18: WB stage invalid
+Cycle 17: Jump to PC=4
+Cycle 17: ID decoded instruction
+Cycle 17: IF fetched instruction at PC=24
+Cycle 18: WB processed 
 Cycle 18: MEM stage processed
-Cycle 18: EX stage invalid
-Cycle 18: ID stalled due to load-use hazard
+Cycle 18: EX stage processed
 Cycle 18: ID decoded instruction
-Cycle 18: IF stalled
-Cycle 19: WB wrote to reg 6
-Cycle 19: MEM stage invalid
+Cycle 18: IF fetched instruction at PC=4
+Cycle 19: WB wrote to reg 5
+Cycle 19: MEM stage processed
 Cycle 19: EX stage processed
-Cycle 19: ID stalled
-Cycle 19: IF stalled
-Cycle 20: WB stage invalid
+Cycle 19: ID decoded instruction
+Cycle 19: IF fetched instruction at PC=8
+Cycle 20: WB processed 
 Cycle 20: MEM stage processed
-Cycle 20: EX stage invalid
-Cycle 20: ID stalled due to load-use hazard
+Cycle 20: EX stage processed
 Cycle 20: ID decoded instruction
-Cycle 20: IF stalled
-Cycle 21: WB wrote to reg 6
-Cycle 21: MEM stage invalid
+Cycle 20: IF fetched instruction at PC=12
+Cycle 21: WB wrote to reg 10
+Cycle 21: MEM stage processed
 Cycle 21: EX stage processed
-Cycle 21: ID stalled
+Cycle 21: ID stalled due to branch load hazard (1 stall)
 Cycle 21: IF stalled
-Cycle 22: WB stage invalid
+Cycle 22: WB wrote to reg 6
 Cycle 22: MEM stage processed
 Cycle 22: EX stage invalid
-Cycle 22: ID stalled due to load-use hazard
-Cycle 22: ID decoded instruction
+Cycle 22: ID stalled
 Cycle 22: IF stalled
 Cycle 23: WB wrote to reg 6
 Cycle 23: MEM stage invalid
-Cycle 23: EX stage processed
-Cycle 23: ID stalled
-Cycle 23: IF stalled
+Cycle 23: EX stage invalid
+Cycle 23: Branch detected, assuming not taken
+Cycle 23: ID decoded instruction
+Cycle 23: IF fetched instruction at PC=16
 Cycle 24: WB stage invalid
-Cycle 24: MEM stage processed
-Cycle 24: EX stage invalid
-Cycle 24: ID stalled due to load-use hazard
+Cycle 24: MEM stage invalid
+Cycle 24: EX stage processed
 Cycle 24: ID decoded instruction
-Cycle 24: IF stalled
-Cycle 25: WB wrote to reg 6
-Cycle 25: MEM stage invalid
+Cycle 24: IF fetched instruction at PC=20
+Cycle 25: WB stage invalid
+Cycle 25: MEM stage processed
 Cycle 25: EX stage processed
-Cycle 25: ID stalled
-Cycle 25: IF stalled
-Cycle 26: WB stage invalid
+Cycle 25: Jump to PC=4
+Cycle 25: ID decoded instruction
+Cycle 25: IF fetched instruction at PC=24
+Cycle 26: WB processed 
 Cycle 26: MEM stage processed
-Cycle 26: EX stage invalid
-Cycle 26: ID stalled due to load-use hazard
+Cycle 26: EX stage processed
 Cycle 26: ID decoded instruction
-Cycle 26: IF stalled
-Cycle 27: WB wrote to reg 6
-Cycle 27: MEM stage invalid
+Cycle 26: IF fetched instruction at PC=4
+Cycle 27: WB wrote to reg 5
+Cycle 27: MEM stage processed
 Cycle 27: EX stage processed
-Cycle 27: ID stalled
-Cycle 27: IF stalled
-Cycle 28: WB stage invalid
+Cycle 27: ID decoded instruction
+Cycle 27: IF fetched instruction at PC=8
+Cycle 28: WB processed 
 Cycle 28: MEM stage processed
-Cycle 28: EX stage invalid
-Cycle 28: ID stalled due to load-use hazard
+Cycle 28: EX stage processed
 Cycle 28: ID decoded instruction
-Cycle 28: IF stalled
-Cycle 29: WB wrote to reg 6
-Cycle 29: MEM stage invalid
+Cycle 28: IF fetched instruction at PC=12
+Cycle 29: WB wrote to reg 10
+Cycle 29: MEM stage processed
 Cycle 29: EX stage processed
-Cycle 29: ID stalled
+Cycle 29: ID stalled due to branch load hazard (1 stall)
 Cycle 29: IF stalled
-Cycle 30: WB stage invalid
+Cycle 30: WB wrote to reg 6
 Cycle 30: MEM stage processed
 Cycle 30: EX stage invalid
-Cycle 30: ID stalled due to load-use hazard
-Cycle 30: ID decoded instruction
+Cycle 30: ID stalled
 Cycle 30: IF stalled
 Cycle 31: WB wrote to reg 6
 Cycle 31: MEM stage invalid
-Cycle 31: EX stage processed
-Cycle 31: ID stalled
-Cycle 31: IF stalled
+Cycle 31: EX stage invalid
+Cycle 31: Branch detected, assuming not taken
+Cycle 31: ID decoded instruction
+Cycle 31: IF fetched instruction at PC=16
 Cycle 32: WB stage invalid
-Cycle 32: MEM stage processed
-Cycle 32: EX stage invalid
-Cycle 32: ID stalled due to load-use hazard
+Cycle 32: MEM stage invalid
+Cycle 32: EX stage processed
 Cycle 32: ID decoded instruction
-Cycle 32: IF stalled
-Cycle 33: WB wrote to reg 6
-Cycle 33: MEM stage invalid
+Cycle 32: IF fetched instruction at PC=20
+Cycle 33: WB stage invalid
+Cycle 33: MEM stage processed
 Cycle 33: EX stage processed
-Cycle 33: ID stalled
-Cycle 33: IF stalled
-Cycle 34: WB stage invalid
+Cycle 33: Jump to PC=4
+Cycle 33: ID decoded instruction
+Cycle 33: IF fetched instruction at PC=24
+Cycle 34: WB processed 
 Cycle 34: MEM stage processed
-Cycle 34: EX stage invalid
-Cycle 34: ID stalled due to load-use hazard
+Cycle 34: EX stage processed
 Cycle 34: ID decoded instruction
-Cycle 34: IF stalled
-Cycle 35: WB wrote to reg 6
-Cycle 35: MEM stage invalid
+Cycle 34: IF fetched instruction at PC=4
+Cycle 35: WB wrote to reg 5
+Cycle 35: MEM stage processed
 Cycle 35: EX stage processed
-Cycle 35: ID stalled
-Cycle 35: IF stalled
-Cycle 36: WB stage invalid
+Cycle 35: ID decoded instruction
+Cycle 35: IF fetched instruction at PC=8
+Cycle 36: WB processed 
 Cycle 36: MEM stage processed
-Cycle 36: EX stage invalid
-Cycle 36: ID stalled due to load-use hazard
+Cycle 36: EX stage processed
 Cycle 36: ID decoded instruction
-Cycle 36: IF stalled
-Cycle 37: WB wrote to reg 6
-Cycle 37: MEM stage invalid
+Cycle 36: IF fetched instruction at PC=12
+Cycle 37: WB wrote to reg 10
+Cycle 37: MEM stage processed
 Cycle 37: EX stage processed
-Cycle 37: ID stalled
+Cycle 37: ID stalled due to branch load hazard (1 stall)
 Cycle 37: IF stalled
-Cycle 38: WB stage invalid
+Cycle 38: WB wrote to reg 6
 Cycle 38: MEM stage processed
 Cycle 38: EX stage invalid
-Cycle 38: ID stalled due to load-use hazard
-Cycle 38: ID decoded instruction
+Cycle 38: ID stalled
 Cycle 38: IF stalled
 Cycle 39: WB wrote to reg 6
 Cycle 39: MEM stage invalid
-Cycle 39: EX stage processed
-Cycle 39: ID stalled
-Cycle 39: IF stalled
+Cycle 39: EX stage invalid
+Cycle 39: Branch detected, assuming not taken
+Cycle 39: ID decoded instruction
+Cycle 39: IF fetched instruction at PC=16
 Cycle 40: WB stage invalid
-Cycle 40: MEM stage processed
-Cycle 40: EX stage invalid
-Cycle 40: ID stalled due to load-use hazard
+Cycle 40: MEM stage invalid
+Cycle 40: EX stage processed
 Cycle 40: ID decoded instruction
-Cycle 40: IF stalled
+Cycle 40: IF fetched instruction at PC=20

@@ -4,7 +4,7 @@
 #include <bitset>
 using namespace std;
 
-// Struct definitions remain unchanged
+// Pipeline register structs (unchanged)
 typedef struct IF_ID {
     bitset<32> inst;
     int pc;
@@ -100,8 +100,12 @@ PC pc = {0, 0, 0, true};
 forwarding_unit fwd_unit = {0, 0, 0, 0, false};
 bitset<32> inst_mem[1024];
 int inst_count = 0;
-bool stall = false;  // Global stall flag
-int stall_count = 0; // Global stall counter
+bool stall = false;
+int stall_count = 0;
+bool if_stall = false;
+bool ex_jump = false;
+int new_addr;
+int prev_cycle;
 
 void initialize_memory() {
     for (int i = 0; i < 1024 * 1024; i++) {
@@ -126,6 +130,21 @@ void load_instructions(const string& filename) {
 }
 
 void instruction_fetch(int cycle) {
+    if (if_stall) {
+        cout << "Cycle " << cycle << ": IF stalled" << endl;
+        return;
+    }
+    if(ex_jump && (cycle == prev_cycle+1)){
+        pc.pc = new_addr;
+        ex_jump = false;
+        if_id.inst = inst_mem[pc.pc / 4];
+        if_id.pc = pc.pc;
+        if_id.valid = true;
+        pc.pc += 4;
+        cout << "Cycle " << cycle << ": IF fetched instruction at PC=" << if_id.pc << endl;
+        return;
+
+    }
     if (pc.valid && pc.pc / 4 < inst_count) {
         if_id.inst = inst_mem[pc.pc / 4];
         if_id.pc = pc.pc;
@@ -140,37 +159,78 @@ void instruction_fetch(int cycle) {
 }
 
 void instruction_decode(int cycle) {
-    // Check if the incoming instruction from IF/ID is valid
     if (!if_id.valid) {
         id_ex.valid = false;
         cout << "Cycle " << cycle << ": ID stage invalid" << endl;
         return;
     }
 
-    // Stall handling
     if (stall) {
         id_ex.valid = false;
-        pc.pc -= 4;  // Rewind PC to refetch the same instruction
         if (stall_count > 0) {
             stall_count--;
             cout << "Cycle " << cycle << ": ID stalled" << endl;
+            if_stall = true;  // Stall IF next cycle
+            pc.pc += 4;
             return;
         } else {
-            stall = false;  // Stalls completed
+            stall = false;
+            if_stall = false;
         }
     }
 
-    // Extract instruction fields
     bitset<32> inst = if_id.inst;
-    bitset<7> opcode(inst.to_ulong() & 0b1111111);           // Bits [6:0]
-    int rs1 = (int)((inst.to_ulong() >> 15) & 0b11111);      // Bits [19:15]
-    int rs2 = (int)((inst.to_ulong() >> 20) & 0b11111);      // Bits [24:20]
-    int rd = (int)((inst.to_ulong() >> 7) & 0b11111);        // Bits [11:7]
+    bitset<7> opcode(inst.to_ulong() & 0b1111111);
+    int rs1 = (int)((inst.to_ulong() >> 15) & 0b11111);
+    int rs2 = (int)((inst.to_ulong() >> 20) & 0b11111);
+    int rd = (int)((inst.to_ulong() >> 7) & 0b11111);
 
-    // Declare immediate value
+    // Hazard detection
+    if (opcode.to_ulong() == 0b1100011) {  // Branch (SB-type)
+        if (mem_wb.valid && mem_wb.mem_read && mem_wb.rd != 0 && 
+            (mem_wb.rd == rs1 || mem_wb.rd == rs2)) {
+            stall = true;
+            stall_count = 2;
+            cout << "Cycle " << cycle << ": ID stalled due to branch MEM hazard (2 stalls)" << endl;
+            id_ex.valid = false;
+            pc.pc -= 4;
+            if_stall = true;
+            return;
+        }
+        if (ex_mem.valid && ex_mem.mem_read && ex_mem.rd != 0 && 
+            (ex_mem.rd == rs1 || ex_mem.rd == rs2)) {
+            stall = true;
+            stall_count = 1;
+            cout << "Cycle " << cycle << ": ID stalled due to branch load hazard (1 stall)" << endl;
+            id_ex.valid = false;
+            pc.pc -= 4;
+            if_stall = true;
+            return;
+        }
+        if (ex_mem.valid && ex_mem.reg_write && !ex_mem.mem_read && ex_mem.rd != 0 && 
+            (ex_mem.rd == rs1 || ex_mem.rd == rs2)) {
+            stall = true;
+            stall_count = 1;
+            cout << "Cycle " << cycle << ": ID stalled due to branch ALU hazard (1 stall)" << endl;
+            id_ex.valid = false;
+            pc.pc -= 4;
+            if_stall = true;
+            return;
+        }
+    } else {  // Non-branch
+        if (ex_mem.valid && ex_mem.mem_read && ex_mem.rd != 0 && 
+            (ex_mem.rd == rs1 || ex_mem.rd == rs2)) {
+            stall = true;
+            stall_count = 1;
+            cout << "Cycle " << cycle << ": ID stalled due to load-use hazard" << endl;
+            id_ex.valid = false;
+            pc.pc -= 4;
+            if_stall = true;
+            return;
+        }
+    }
+
     int imm = 0;
-
-    // Initialize ID/EX pipeline register
     id_ex.inst = inst;
     id_ex.pc = if_id.pc;
     id_ex.rs1 = 0;
@@ -188,94 +248,89 @@ void instruction_decode(int cycle) {
     id_ex.reg_write = 0;
     id_ex.valid = true;
 
-    // Decode based on opcode
     switch (opcode.to_ulong()) {
-        case 0b0110011: // R-type (e.g., add, sub)
+        case 0b0110011: // R-type
             id_ex.rd = rd;
             id_ex.rs1 = rs1;
             id_ex.rs2 = rs2;
             id_ex.reg_write = 1;
-            id_ex.alu_op = 2;  // ALU operation for R-type
+            id_ex.alu_op = 2;
             break;
 
-        case 0b0010011: // I-type (arithmetic, e.g., addi)
+        case 0b0010011: // I-type (arithmetic)
             id_ex.rd = rd;
             id_ex.rs1 = rs1;
-            imm = (int)((inst.to_ulong() >> 20) & 0b111111111111);  // Bits [31:20]
-            if (imm & 0x800) imm |= 0xFFFFF000;  // Sign-extend 12-bit imm
+            imm = (int)((inst.to_ulong() >> 20) & 0b111111111111);
+            if (imm & 0x800) imm |= 0xFFFFF000;
             id_ex.imm = imm;
             id_ex.reg_write = 1;
-            id_ex.alu_src = 1;  // Use immediate as second operand
+            id_ex.alu_src = 1;
             break;
 
-        case 0b0000011: // I-type (load, e.g., lw)
+        case 0b0000011: // I-type (load)
             id_ex.rd = rd;
             id_ex.rs1 = rs1;
-            imm = (int)((inst.to_ulong() >> 20) & 0b111111111111);  // Bits [31:20]
-            if (imm & 0x800) imm |= 0xFFFFF000;  // Sign-extend 12-bit imm
+            imm = (int)((inst.to_ulong() >> 20) & 0b111111111111);
+            if (imm & 0x800) imm |= 0xFFFFF000;
             id_ex.imm = imm;
             id_ex.reg_write = 1;
             id_ex.mem_read = 1;
-            id_ex.mem_to_reg = 1;  // Write memory data to register
-            id_ex.alu_src = 1;     // Use immediate for address calculation
+            id_ex.mem_to_reg = 1;
+            id_ex.alu_src = 1;
             break;
 
-        case 0b0100011: // S-type (store, e.g., sw)
+        case 0b0100011: // S-type (store)
             id_ex.rs1 = rs1;
             id_ex.rs2 = rs2;
-            imm = ((int)((inst.to_ulong() >> 25) & 0b1111111) << 5) |  // Bits [31:25]
-                  ((int)((inst.to_ulong() >> 7) & 0b11111));           // Bits [11:7]
-            if (imm & 0x800) imm |= 0xFFFFF000;  // Sign-extend 12-bit imm
+            imm = ((int)((inst.to_ulong() >> 25) & 0b1111111) << 5) |
+                  ((int)((inst.to_ulong() >> 7) & 0b11111));
+            if (imm & 0x800) imm |= 0xFFFFF000;
             id_ex.imm = imm;
             id_ex.mem_write = 1;
-            id_ex.alu_src = 1;  // Use immediate for address calculation
+            id_ex.alu_src = 1;
             break;
 
-        case 0b1100011: // SB-type (branch, e.g., beq)
+        case 0b1100011: // SB-type (branch)
             id_ex.rs1 = rs1;
             id_ex.rs2 = rs2;
-            imm = ((inst[31] << 12) |                          // Bit [31]
-                   (((inst.to_ulong() >> 25) & 0b111111) << 5) | // Bits [30:25]
-                   (((inst.to_ulong() >> 8) & 0b1111) << 1) |   // Bits [11:8]
-                   (inst[7] << 11));                            // Bit [7]
-            if (inst[31]) imm |= 0xFFFFF000;  // Sign-extend 13-bit imm
+            imm = ((inst[31] << 12) | (((inst.to_ulong() >> 25) & 0b111111) << 5) |
+                   (((inst.to_ulong() >> 8) & 0b1111) << 1) | (inst[7] << 11));
+            if (inst[31]) imm |= 0xFFFFF000;
             id_ex.imm = imm;
-            id_ex.branch = 1;  // Branch operation
-            id_ex.alu_op = 1;  // ALU subtraction for comparison
+            id_ex.branch = 1;
+            id_ex.alu_op = 1;
             break;
 
         case 0b1101111: // UJ-type (jal)
             id_ex.rd = rd;
-            imm = (inst[31] << 20) |                           // Bit [31]
-                  ((inst.to_ulong() >> 21 & 0b1111111111) << 1) | // Bits [30:21]
-                  (inst[20] << 11) |                           // Bit [20]
-                  ((inst.to_ulong() >> 12 & 0b11111111) << 12); // Bits [19:12]
-            if (inst[31]) imm |= 0xFFF00000;  // Sign-extend 21-bit imm
+            imm = (inst[31] << 20) | 
+                  ((inst.to_ulong() >> 21 & 0b1111111111) << 1) | 
+                  (inst[20] << 11) | 
+                  ((inst.to_ulong() >> 12 & 0b11111111) << 12);
+            if (inst[31]) imm |= 0xFFF00000;
             id_ex.imm = imm;
             id_ex.reg_write = 1;
-            id_ex.branch = 2;  // Jump operation (jal)
+            id_ex.branch = 2;
             break;
 
         case 0b1100111: // I-type (jalr)
             id_ex.rd = rd;
             id_ex.rs1 = rs1;
-            imm = (int)((inst.to_ulong() >> 20) & 0b111111111111);  // Bits [31:20]
-            if (imm & 0x800) imm |= 0xFFFFF000;  // Sign-extend 12-bit imm
+            imm = (int)((inst.to_ulong() >> 20) & 0b111111111111);
+            if (imm & 0x800) imm |= 0xFFFFF000;
             id_ex.imm = imm;
             id_ex.reg_write = 1;
-            id_ex.branch = 3;  // Jump operation (jalr)
+            id_ex.branch = 3;
             break;
 
         default:
-            cout << "Unknown opcode: " << opcode << endl;
+            cout << "Cycle " << cycle << ": Unknown opcode: " << opcode << endl;
             break;
     }
 
-    // Read register values
     id_ex.data1 = reg[id_ex.rs1];
     id_ex.data2 = reg[id_ex.rs2];
 
-    // Handle jump instructions (jal and jalr)
     if (id_ex.branch == 2 || id_ex.branch == 3) {
         int target_pc;
         if (id_ex.branch == 2) {  // jal
@@ -283,22 +338,15 @@ void instruction_decode(int cycle) {
         } else {  // jalr
             target_pc = reg[id_ex.rs1] + id_ex.imm;
         }
-        pc.pc = target_pc;       // Update program counter
-        if_id.valid = false;     // Flush IF stage
+        ex_jump = true;
+        new_addr = target_pc;
+        prev_cycle = cycle;
+        if_id.valid = false;
         cout << "Cycle " << cycle << ": Jump to PC=" << target_pc << endl;
     }
 
-    // Hazard detection
-    if (id_ex.valid && id_ex.mem_read && (id_ex.rd == rs1 || id_ex.rd == rs2)) {
-        stall = true;
-        stall_count = 1;
-        cout << "Cycle " << cycle << ": ID stalled due to load-use hazard" << endl;
-    }
-    if (id_ex.valid && id_ex.mem_read && (id_ex.rd == rs1 || id_ex.rd ==-rs2) &&
-        opcode.to_ulong() == 0b1100011) {
-        stall = true;
-        stall_count = 2;
-        cout << "Cycle " << cycle << ": ID stalled due to load-branch hazard (2 stalls)" << endl;
+    if (id_ex.branch == 1) {
+        cout << "Cycle " << cycle << ": Branch detected, assuming not taken" << endl;
     }
 
     cout << "Cycle " << cycle << ": ID decoded instruction" << endl;
@@ -325,13 +373,13 @@ void execute(int cycle) {
 
     fwd_unit.fwdA = 0;
     fwd_unit.fwdB = 0;
-    if (ex_mem.reg_write && ex_mem.rd != 0 && ex_mem.rd == id_ex.rs1)
+    if (ex_mem.valid && ex_mem.reg_write && ex_mem.rd != 0 && ex_mem.rd == id_ex.rs1)
         fwd_unit.fwdA = 1;
-    if (mem_wb.reg_write && mem_wb.rd != 0 && mem_wb.rd == id_ex.rs1)
+    if (mem_wb.valid && mem_wb.reg_write && mem_wb.rd != 0 && mem_wb.rd == id_ex.rs1)
         fwd_unit.fwdA = 2;
-    if (ex_mem.reg_write && ex_mem.rd != 0 && ex_mem.rd == id_ex.rs2)
+    if (ex_mem.valid && ex_mem.reg_write && ex_mem.rd != 0 && ex_mem.rd == id_ex.rs2)
         fwd_unit.fwdB = 1;
-    if (mem_wb.reg_write && mem_wb.rd != 0 && mem_wb.rd == id_ex.rs2)
+    if (mem_wb.valid && mem_wb.reg_write && mem_wb.rd != 0 && mem_wb.rd == id_ex.rs2)
         fwd_unit.fwdB = 2;
 
     ex_mem.rd_val = 0;
@@ -381,6 +429,9 @@ void write_back(int cycle) {
         reg[mem_wb.rd] = 0;
         cout << "Cycle " << cycle << ": WB wrote to reg " << mem_wb.rd << endl;
     }
+    else{
+        cout << "Cycle " << cycle << ": WB processed " << endl;
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -400,11 +451,7 @@ int main(int argc, char* argv[]) {
         memory(cycle);
         execute(cycle);
         instruction_decode(cycle);
-        if (!stall) {
-            instruction_fetch(cycle);
-        } else {
-            cout << "Cycle " << cycle << ": IF stalled" << endl;
-        }
+        instruction_fetch(cycle);
     }
 
     return 0;
