@@ -1,47 +1,34 @@
-#include "noforwarding.hpp"
+#include "processor.hpp"
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-
-using namespace std;
-
-vector<uint32_t> loadInstructions(const string& filename) {
-    vector<uint32_t> instructions;
-    ifstream file(filename);
-    if (!file.is_open()) {
-        cerr << "Error: Could not open " << filename << endl;
-        return instructions;
-    }
-    string line;
-    while (getline(file, line)) {
-        uint32_t inst;
-        stringstream ss(line);
-        ss >> hex >> inst;
-        instructions.push_back(inst);
-    }
-    file.close();
-    return instructions;
-}
+#include <string>
+#include <stdexcept>
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
-        cerr << "Usage: ./noforward <inputfile> <cyclecount>" << endl;
+        std::cerr << "Usage: ./noforward <inputfile> <cyclecount>" << std::endl;
         return 1;
     }
 
-    string inputFile = argv[1];
-    int cycles = stoi(argv[2]);
-    vector<uint32_t> instructions = loadInstructions(inputFile);
-    if (instructions.empty()) {
-        cerr << "Error: No instructions loaded from " << inputFile << endl;
+    std::string filename = argv[1];
+    int cyclecount = 0;
+    try {
+        cyclecount = std::stoi(argv[2]);
+        if (cyclecount <= 0) {
+            throw std::invalid_argument("Cycle count must be positive.");
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: Invalid cycle count '" << argv[2] << "'. " << e.what() << std::endl;
         return 1;
     }
 
-    NoForwardingProcessor proc(instructions);
-    for (int i = 0; i < cycles; ++i) {
-        proc.runCycle();
-        proc.printPipeline(i + 1);
+    try {
+        Processor risc_v_sim;
+        risc_v_sim.loadProgram(filename);
+        risc_v_sim.run(cyclecount);
+        risc_v_sim.printPipelineDiagram();
+    } catch (const std::exception& e) {
+        std::cerr << "Runtime Error: " << e.what() << std::endl;
+        return 1;
     }
 
     return 0;

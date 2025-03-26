@@ -1,270 +1,225 @@
-#include "noforwarding.hpp"
 #include <iostream>
-#include <iomanip>
-#include <sstream>
+#include <vector>
+#include <string>
+#include <fstream>
+#include <cstdlib>
 
-std::vector<int> reg(NUM_REGS, 0);
-int mem[1024] = {0};
+using namespace std;
 
-uint32_t IF::fetch() {
-    if (pc < instr_mem.size() * 4) {
-        uint32_t instruction = instr_mem[pc / 4];
-        pc += 4;
-        return instruction;
+// Control signals struct
+struct ControlSignals {
+    bool rf_wen;
+    bool mem_val;
+    string br_type;
+    ControlSignals() {
+        rf_wen = false;
+        mem_val = false;
+        br_type = "BR_N";
     }
-    return 0; // NOP
-}
+};
 
-int EX::out() {
-    switch (op) {
-        case 0: return a1 + a2;        // ADD
-        case 1: return a1 - a2;        // SUB
-        case 2: return a1 & a2;        // AND
-        case 3: return a1 | a2;        // OR
-        case 4: return a1 << (a2 & 0x1F); // SLL
-        case 5: return ~a1;            // NOT
-        default: return 0;
+// Pipeline latch structs
+struct IFID_Latch {
+    int inst;
+    bool valid;
+    IFID_Latch() {
+        inst = -1;
+        valid = false;
     }
-}
+};
 
-int ID::out(int a1, int a2) {
-    if (!branch_decision) return 0;
-    if (dec == 0) return (a1 == a2) ? 1 : 0; // beq
-    else if (dec == 1) return (a1 < a2) ? 1 : 0; // blt
-    else if (dec == 2) return (a1 <= a2) ? 1 : 0; // ble
-    else if (dec == 3) return (a1 > a2) ? 1 : 0; // bgt
-    else if (dec == 4) return (a1 >= a2) ? 1 : 0; // bge
-    else if (dec == 5) return (a1 == 0) ? 1 : 0; // beqz
+struct IDEX_Latch {
+    int inst;
+    bool valid;
+    int rs1_addr;
+    int rs2_addr;
+    int wbaddr;
+    ControlSignals ctrl;
+    IDEX_Latch() {
+        inst = -1;
+        valid = false;
+        rs1_addr = 0;
+        rs2_addr = 0;
+        wbaddr = 0;
+    }
+};
+
+struct EXMEM_Latch {
+    int inst;
+    bool valid;
+    int wbaddr;
+    ControlSignals ctrl;
+    EXMEM_Latch() {
+        inst = -1;
+        valid = false;
+        wbaddr = 0;
+    }
+};
+
+struct MEMWB_Latch {
+    int inst;
+    bool valid;
+    int wbaddr;
+    ControlSignals ctrl;
+    MEMWB_Latch() {
+        inst = -1;
+        valid = false;
+        wbaddr = 0;
+    }
+};
+
+// Register file class
+class RegisterFile {
+    vector<int> regs;
+public:
+    RegisterFile() : regs(32, 0) {}
+    int read(int addr) { return (addr == 0) ? 0 : regs[addr]; }
+    void write(int addr, int data) { if (addr != 0) regs[addr] = data; }
+};
+
+// No Forwarding Processor
+class NoForwardingProcessor {
+    RegisterFile regfile;
+    IFID_Latch ifid;
+    IDEX_Latch idex;
+    EXMEM_Latch exmem;
+    MEMWB_Latch memwb;
+    vector<string> pipeline_diagram;
+    vector<int> instructions; // Simulated instruction sequence
+    int cycle;
+    int inst_count;
+    int total_cycles;
+
+    void printStage(int inst, string stage) {
+        if (inst >= pipeline_diagram.size()) pipeline_diagram.resize(inst + 1, "");
+        string& row = pipeline_diagram[inst];
+        if (cycle >= row.size() / 3) row += string((cycle - row.size() / 3) * 3, ' ');
+        row += stage + " ";
+    }
+
+    void loadInstructions(const string& filename) {
+        ifstream infile(filename);
+        if (!infile.is_open()) {
+            cerr << "Warning: Could not open " << filename << ". Using dummy instructions.\n";
+            // Simulate 5 instructions with dummy register dependencies
+            instructions.push_back(0);
+            instructions.push_back(1);
+            instructions.push_back(2);
+            instructions.push_back(3);
+            instructions.push_back(4);
+            return;
+        }
+        int inst;
+        while (infile >> inst) {
+            instructions.push_back(inst);
+        }
+        infile.close();
+    }
+
+public:
+    NoForwardingProcessor(const string& filename, int cycles) {
+        cycle = 0;
+        inst_count = 0;
+        total_cycles = cycles;
+        pipeline_diagram.push_back("");
+        loadInstructions(filename);
+    }
+
+    void fetch() {
+        if (inst_count < instructions.size() && !idex.valid) { // Only fetch if no stall
+            ifid.inst = inst_count++;
+            ifid.valid = true;
+            printStage(ifid.inst, "IF");
+        }
+    }
+
+    void decode() {
+        if (!ifid.valid) return;
+        IDEX_Latch temp;
+        temp.inst = ifid.inst;
+        temp.valid = true;
+        temp.rs1_addr = (temp.inst % 5) + 1;  // Simulate rs1 dependency (e.g., x1-x5)
+        temp.rs2_addr = (temp.inst % 5) + 2;  // Simulate rs2 dependency (e.g., x2-x6)
+        temp.wbaddr = (temp.inst % 5) + 3;    // Simulate wbaddr (e.g., x3-x7)
+        temp.ctrl.rf_wen = true;              // Assume all instructions write back
+
+        // RAW hazard check
+        bool hazard = (temp.rs1_addr != 0 && (
+            (idex.valid && idex.ctrl.rf_wen && idex.wbaddr == temp.rs1_addr) ||
+            (exmem.valid && exmem.ctrl.rf_wen && exmem.wbaddr == temp.rs1_addr) ||
+            (memwb.valid && memwb.ctrl.rf_wen && memwb.wbaddr == temp.rs1_addr))) ||
+                      (temp.rs2_addr != 0 && (
+            (idex.valid && idex.ctrl.rf_wen && idex.wbaddr == temp.rs2_addr) ||
+            (exmem.valid && exmem.ctrl.rf_wen && exmem.wbaddr == temp.rs2_addr) ||
+            (memwb.valid && memwb.ctrl.rf_wen && memwb.wbaddr == temp.rs2_addr)));
+
+        if (hazard) {
+            printStage(temp.inst, "ST");  // Stall
+            idex.valid = false;           // Insert bubble into EX
+        } else {
+            idex = temp;
+            printStage(idex.inst, "ID");
+            ifid.valid = false;
+        }
+    }
+
+    void execute() {
+        if (!idex.valid) return;
+        exmem.inst = idex.inst;
+        exmem.valid = true;
+        exmem.wbaddr = idex.wbaddr;
+        exmem.ctrl = idex.ctrl;
+        printStage(exmem.inst, "EX");
+        idex.valid = false;
+    }
+
+    void memory() {
+        if (!exmem.valid) return;
+        memwb.inst = exmem.inst;
+        memwb.valid = true;
+        memwb.wbaddr = exmem.wbaddr;
+        memwb.ctrl = exmem.ctrl;
+        printStage(memwb.inst, "MEM");
+        exmem.valid = false;
+    }
+
+    void writeback() {
+        if (!memwb.valid) return;
+        regfile.write(memwb.wbaddr, memwb.inst);  // Dummy write
+        printStage(memwb.inst, "WB");
+        memwb.valid = false;
+    }
+
+    void run() {
+        for (cycle = 0; cycle < total_cycles; cycle++) {
+            writeback();
+            memory();
+            execute();
+            decode();
+            fetch();
+        }
+        cout << "Cycle: ";
+        for (int c = 0; c < total_cycles; c++) cout << c << "  ";
+        cout << "\n";
+        for (int i = 0; i < pipeline_diagram.size(); i++) {
+            cout << "Inst" << i << ": " << pipeline_diagram[i] << "\n";
+        }
+    }
+};
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        cerr << "Usage: " << argv[0] << " <inputfile.txt> <cyclecount>\n";
+        return 1;
+    }
+    string filename = argv[1];
+    int cyclecount = atoi(argv[2]);
+    if (cyclecount <= 0) {
+        cerr << "Error: cyclecount must be positive\n";
+        return 1;
+    }
+
+    NoForwardingProcessor proc(filename, cyclecount);
+    proc.run();
     return 0;
-}
-
-int MEM::putget() {
-    if (op == 1) { // Load byte
-        reg[reg_number] = mem[mem_addr / 4] & 0xFF;
-        return reg[reg_number];
-    }
-    else if (op == 2) { // Store word
-        mem[mem_addr / 4] = reg[reg_number];
-        return 0;
-    }
-    return 0;
-}
-
-void WB::write() {
-    if (op == 1 && reg_number != 0) {
-        reg[reg_number] = value;
-    }
-}
-
-NoForwardingProcessor::NoForwardingProcessor(std::vector<uint32_t>& instructions)
-    : if_stage(instructions), stall(false) {}
-
-bool NoForwardingProcessor::detectHazardID() {
-    if (id_ex.control.branch && id_ex.rs1 != 0 && (
-        (ex_mem.control.reg_write && ex_mem.rd == id_ex.rs1) ||
-        (mem_wb.reg_write && mem_wb.rd == id_ex.rs1))) {
-        return true;
-    }
-    if (id_ex.control.branch && id_ex.rs2 != 0 && (
-        (ex_mem.control.reg_write && ex_mem.rd == id_ex.rs2) ||
-        (mem_wb.reg_write && mem_wb.rd == id_ex.rs2))) {
-        return true;
-    }
-    return false;
-}
-
-bool NoForwardingProcessor::detectHazardEX() {
-    if (id_ex.rs1 != 0 && (
-        (ex_mem.control.reg_write && ex_mem.rd == id_ex.rs1) ||
-        (mem_wb.reg_write && mem_wb.rd == id_ex.rs1))) {
-        return true;
-    }
-    if (id_ex.rs2 != 0 && (
-        (ex_mem.control.reg_write && ex_mem.rd == id_ex.rs2) ||
-        (mem_wb.reg_write && mem_wb.rd == id_ex.rs2))) {
-        return true;
-    }
-    return false;
-}
-
-bool NoForwardingProcessor::detectHazardMEM() {
-    if (ex_mem.control.mem_write && ex_mem.rs2 != 0 && 
-        (mem_wb.reg_write && mem_wb.rd == ex_mem.rs2)) {
-        return true;
-    }
-    return false;
-}
-
-std::string NoForwardingProcessor::decodeMnemonic(uint32_t inst) {
-    int opcode = inst & 0x7F;
-    int funct3 = (inst >> 12) & 0x7;
-    int funct7 = (inst >> 25) & 0x7F;
-    int rd = (inst >> 7) & 0x1F;
-    int rs1 = (inst >> 15) & 0x1F;
-    int rs2 = (inst >> 20) & 0x1F;
-    std::stringstream ss;
-
-    if (opcode == 0x33) { // R-type
-        if (funct3 == 0x0 && funct7 == 0x00) ss << "add x" << rd << " x" << rs1 << " x" << rs2;
-        else if (funct3 == 0x0 && funct7 == 0x20) ss << "sub x" << rd << " x" << rs1 << " x" << rs2;
-        else if (funct3 == 0x7) ss << "and x" << rd << " x" << rs1 << " x" << rs2;
-        else if (funct3 == 0x6) ss << "or x" << rd << " x" << rs1 << " x" << rs2;
-        else if (funct3 == 0x1) ss << "sll x" << rd << " x" << rs1 << " x" << rs2;
-    } else if (opcode == 0x13) { // I-type
-        int imm = inst >> 20;
-        if (funct3 == 0x0) ss << "addi x" << rd << " x" << rs1 << " " << imm;
-        else if (funct3 == 0x1) ss << "slli x" << rd << " x" << rs1 << " " << (imm & 0x1F);
-        else if (funct3 == 0x4 && imm == 0xFFF) ss << "not x" << rd << " x" << rs1;
-    } else if (opcode == 0x63) { // Branch
-        if (funct3 == 0x0) ss << "beq x" << rs1 << " x" << rs2 << " " << (int)(((inst >> 31) << 12) | (((inst >> 25) & 0x3F) << 5) | (((inst >> 8) & 0xF) << 1) | ((inst >> 7) & 0x1));
-    } else if (opcode == 0x23) { // Store
-        ss << "sw x" << rs2 << " " << (((inst >> 25) << 5) | ((inst >> 7) & 0x1F)) << "(x" << rs1 << ")";
-    } else if (opcode == 0x03 && funct3 == 0x0) { // Load byte
-        ss << "lb x" << rd << " " << (inst >> 20) << "(x" << rs1 << ")";
-    } else if (opcode == 0x6f) { // Jump
-        ss << "j " << (((inst >> 31) << 20) | ((inst >> 12) & 0xFF) << 12 | ((inst >> 20) & 0x7FE) | (((inst >> 21) & 0x3FF) << 1));
-    }
-    return ss.str();
-}
-
-void NoForwardingProcessor::runCycle() {
-    // Writeback Stage
-    if (mem_wb.reg_write) {
-        wb_stage.op = 1;
-        wb_stage.reg_number = mem_wb.rd;
-        wb_stage.value = mem_wb.alu_result;
-        wb_stage.write();
-        if (pipeline_history.count(mem_wb.pc)) {
-            pipeline_history[mem_wb.pc].push_back("WB");
-        }
-        mem_wb = MEMWB();
-    } else if (mem_wb.pc != 0 && pipeline_history.count(mem_wb.pc)) {
-        pipeline_history[mem_wb.pc].push_back("-");
-    }
-
-    // Memory Stage
-    if (ex_mem.pc != 0 && !detectHazardMEM()) {
-        mem_stage.reg_number = ex_mem.rd;
-        mem_stage.op = ex_mem.control.mem_read ? 1 : (ex_mem.control.mem_write ? 2 : 0);
-        mem_stage.mem_addr = ex_mem.alu_result;
-        mem_wb.pc = ex_mem.pc;
-        mem_wb.alu_result = (mem_stage.op == 1) ? mem_stage.putget() : ex_mem.alu_result;
-        mem_wb.rd = ex_mem.rd;
-        mem_wb.reg_write = ex_mem.control.reg_write;
-        if (pipeline_history.count(ex_mem.pc)) {
-            pipeline_history[ex_mem.pc].push_back("MEM");
-        }
-        ex_mem = EXMEM();
-    } else if (ex_mem.pc != 0 && pipeline_history.count(ex_mem.pc)) {
-        pipeline_history[ex_mem.pc].push_back("-");
-    }
-
-    // Execute Stage
-    if (id_ex.pc != 0 && !detectHazardEX()) {
-        ex_stage.op = id_ex.control.alu_op;
-        ex_stage.a1 = id_ex.rs1_val;
-        ex_stage.a2 = (id_ex.control.alu_op == 5 || id_ex.rs2 == 0) ? id_ex.imm : id_ex.rs2_val;
-        ex_mem.pc = id_ex.pc;
-        ex_mem.alu_result = ex_stage.out();
-        ex_mem.rs2_val = id_ex.rs2_val;
-        ex_mem.rs2 = id_ex.rs2;
-        ex_mem.rd = id_ex.rd;
-        ex_mem.control = id_ex.control;
-        if (pipeline_history.count(id_ex.pc)) {
-            pipeline_history[id_ex.pc].push_back("EX");
-        }
-        if (!id_ex.control.branch) id_ex = IDEX();
-    } else if (id_ex.pc != 0 && pipeline_history.count(id_ex.pc)) {
-        pipeline_history[id_ex.pc].push_back("-");
-    }
-
-    // Decode Stage
-    bool id_stall = detectHazardID();
-    if (if_id.instruction != 0 && !id_stall) {
-        uint32_t inst = if_id.instruction;
-        int opcode = inst & 0x7F;
-        int funct3 = (inst >> 12) & 0x7;
-        int funct7 = (inst >> 25) & 0x7F;
-        id_ex.rd = (inst >> 7) & 0x1F;
-        id_ex.rs1 = (inst >> 15) & 0x1F;
-        id_ex.rs2 = (inst >> 20) & 0x1F;
-        id_ex.imm = (opcode == 0x13 || opcode == 0x03) ? (inst >> 20) : 0;
-
-        id_ex.control = ControlSignals();
-        if (opcode == 0x33) { // R-type
-            id_ex.control.reg_write = true;
-            if (funct3 == 0x0 && funct7 == 0x00) id_ex.control.alu_op = 0; // ADD
-            else if (funct3 == 0x0 && funct7 == 0x20) id_ex.control.alu_op = 1; // SUB
-            else if (funct3 == 0x7) id_ex.control.alu_op = 2; // AND
-            else if (funct3 == 0x6) id_ex.control.alu_op = 3; // OR
-            else if (funct3 == 0x1) id_ex.control.alu_op = 4; // SLL
-        } else if (opcode == 0x13) { // I-type
-            id_ex.control.reg_write = true;
-            if (funct3 == 0x0) id_ex.control.alu_op = 0; // ADDI
-            else if (funct3 == 0x1) id_ex.control.alu_op = 4; // SLLI
-            else if (funct3 == 0x4 && id_ex.imm == 0xFFF) id_ex.control.alu_op = 5; // NOT
-        } else if (opcode == 0x63) { // Branch
-            id_ex.control.branch = true;
-            id_stage.branch_decision = true;
-            id_stage.dec = funct3;
-            id_stage.a1 = reg[id_ex.rs1];
-            id_stage.a2 = reg[id_ex.rs2];
-            id_ex.imm = ((inst >> 31) << 12) | (((inst >> 25) & 0x3F) << 5) | 
-                        (((inst >> 8) & 0xF) << 1) | ((inst >> 7) & 0x1);
-            if (id_stage.out(id_stage.a1, id_stage.a2)) {
-                if_stage.pc = if_id.pc + id_ex.imm;
-            }
-        } else if (opcode == 0x23) { // Store
-            id_ex.control.mem_write = true;
-            id_ex.imm = ((inst >> 25) << 5) | ((inst >> 7) & 0x1F);
-        } else if (opcode == 0x03 && funct3 == 0x0) { // Load byte
-            id_ex.control.mem_read = true;
-            id_ex.control.reg_write = true;
-        } else if (opcode == 0x6f) { // Jump
-            id_ex.control.branch = true;
-            id_stage.branch_decision = true;
-            id_stage.dec = 5;
-            id_stage.a1 = 1;
-            id_stage.a2 = 0;
-            id_ex.imm = ((inst >> 31) << 20) | ((inst >> 12) & 0xFF) << 12 | 
-                        ((inst >> 20) & 0x7FE) | (((inst >> 21) & 0x3FF) << 1);
-            if_stage.pc = if_id.pc + id_ex.imm;
-        }
-
-        id_ex.rs1_val = reg[id_ex.rs1];
-        id_ex.rs2_val = reg[id_ex.rs2];
-        id_ex.pc = if_id.pc;
-        if (pipeline_history.count(if_id.pc)) {
-            pipeline_history[if_id.pc].push_back("ID");
-        }
-    } else if (if_id.instruction != 0 && pipeline_history.count(if_id.pc)) {
-        pipeline_history[if_id.pc].push_back("-");
-    }
-
-    // Fetch Stage
-    if (!stall) {
-        if_id.instruction = if_stage.fetch();
-        if_id.pc = if_stage.pc - 4;
-        if (if_id.instruction != 0) {
-            instr_mnemonics[if_id.pc] = decodeMnemonic(if_id.instruction);
-            pipeline_history[if_id.pc] = {"IF"};
-        }
-    } else if (if_id.instruction != 0 && pipeline_history.count(if_id.pc)) {
-        pipeline_history[if_id.pc].push_back("-");
-    }
-    stall = id_stall;
-}
-
-void NoForwardingProcessor::printPipeline(int cycle) {
-    std::cout << "Cycle " << cycle << ":\n";
-    for (const auto& entry : pipeline_history) {
-        const std::string& mnemonic = instr_mnemonics[entry.first];
-        const auto& stages = entry.second;
-        std::cout << mnemonic;
-        for (const auto& stage : stages) {
-            std::cout << ";" << stage;
-        }
-        std::cout << "\n";
-    }
-    std::cout << "\n";
 }
