@@ -106,6 +106,8 @@ bool if_stall = false;
 bool ex_jump = false;
 int new_addr;
 int prev_cycle;
+bool kill = false;
+bool ex_branch = false;
 
 void initialize_memory() {
     for (int i = 0; i < 1024 * 1024; i++) {
@@ -145,6 +147,14 @@ void instruction_fetch(int cycle) {
         return;
 
     }
+    if(ex_branch){
+        ex_branch = false;
+        if_id.inst = inst_mem[pc.pc / 4];
+        if_id.pc = pc.pc;
+        if_id.valid = false;
+        cout << "Cycle " << cycle << ": IF fetched instruction at PC=" << if_id.pc << " (will be killed in next ID stage)" << endl;
+        return;
+    }
     if (pc.valid && pc.pc / 4 < inst_count) {
         if_id.inst = inst_mem[pc.pc / 4];
         if_id.pc = pc.pc;
@@ -178,12 +188,35 @@ void instruction_decode(int cycle) {
             if_stall = false;
         }
     }
+    
 
     bitset<32> inst = if_id.inst;
     bitset<7> opcode(inst.to_ulong() & 0b1111111);
     int rs1 = (int)((inst.to_ulong() >> 15) & 0b11111);
     int rs2 = (int)((inst.to_ulong() >> 20) & 0b11111);
     int rd = (int)((inst.to_ulong() >> 7) & 0b11111);
+
+    if(kill){
+        id_ex.inst = inst;
+        id_ex.pc = if_id.pc;
+        id_ex.rs1 = 0;
+        id_ex.rs2 = 0;
+        id_ex.rd = 0;
+        id_ex.imm = 0;
+        id_ex.data1 = 0;
+        id_ex.data2 = 0;
+        id_ex.alu_src = 0;
+        id_ex.alu_op = 0;
+        id_ex.branch = 0;
+        id_ex.mem_read = 0;
+        id_ex.mem_write = 0;
+        id_ex.mem_to_reg = 0;
+        id_ex.reg_write = 0;
+        id_ex.valid = false;
+        cout << "Cycle " << cycle << ": ID stage invalid" << endl;
+        kill = false;
+        return;
+    }
 
     // Hazard detection
     if (opcode.to_ulong() == 0b1100011) {  // Branch (SB-type)
@@ -342,10 +375,12 @@ void instruction_decode(int cycle) {
         new_addr = target_pc;
         prev_cycle = cycle;
         if_id.valid = false;
+        kill = true;
         cout << "Cycle " << cycle << ": Jump to PC=" << target_pc << endl;
     }
 
     if (id_ex.branch == 1) {
+        ex_branch = true;
         cout << "Cycle " << cycle << ": Branch detected, assuming not taken" << endl;
     }
 
