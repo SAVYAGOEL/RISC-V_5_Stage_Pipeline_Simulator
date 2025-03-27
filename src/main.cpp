@@ -1,31 +1,36 @@
+
 #include "processor.hpp"
 #include <iostream>
 #include <string>
-#include <stdexcept>
 
 int main(int argc, char* argv[]) {
+    // Check command-line arguments
     if (argc != 3) {
         std::cerr << "Usage: ./noforward <inputfile> <cyclecount>" << std::endl;
         return 1;
     }
 
     std::string filename = argv[1];
-    int cyclecount = 0;
+    int cycles = 0;
+
+    // Validate cycle count
     try {
-        cyclecount = std::stoi(argv[2]);
-        if (cyclecount <= 0) {
-            throw std::invalid_argument("Cycle count must be positive.");
+        cycles = std::stoi(argv[2]);
+        if (cycles <= 0) {
+            std::cerr << "Error: Cycle count must be positive." << std::endl;
+            return 1;
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error: Invalid cycle count '" << argv[2] << "'. " << e.what() << std::endl;
+        std::cerr << "Error: Invalid cycle count '" << argv[2] << "'." << std::endl;
         return 1;
     }
 
+    // Run the simulation
     try {
-        Processor risc_v_sim;
-        risc_v_sim.loadProgram(filename);
-        risc_v_sim.run(cyclecount);
-        risc_v_sim.printPipelineDiagram();
+        Processor simulator;
+        simulator.loadProgramFromFile(filename);
+        simulator.runSimulation(cycles);
+        simulator.displayPipeline();
     } catch (const std::exception& e) {
         std::cerr << "Runtime Error: " << e.what() << std::endl;
         return 1;

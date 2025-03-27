@@ -1,3 +1,4 @@
+
 #ifndef PROCESSOR_HPP
 #define PROCESSOR_HPP
 
@@ -5,45 +6,47 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <utility> // For std::pair
+#include <utility>
 
-// Define a halt address
-const uint32_t HALT_ADDRESS = 0xFFFFFFFF;
+// Special address to stop the processor
+const uint32_t STOP_ADDRESS = 0xFFFFFFFF;
 
 class Processor {
 public:
     Processor();
-    void loadProgram(const std::string& filename);
-    void run(int cycles);
-    void printPipelineDiagram();
+    void loadProgramFromFile(const std::string& filename);
+    void runSimulation(int totalCycles);
+    void displayPipeline();
 
 private:
-    uint32_t pc;
-    std::vector<int32_t> regs;
-    std::map<uint32_t, std::pair<uint32_t, std::string>> instructionMemory;
+    uint32_t programCounter; // Tracks current instruction address
+    std::vector<int32_t> registers; // 32 RISC-V registers
+    std::map<uint32_t, std::pair<uint32_t, std::string> > programMemory; // Address -> (machine code, assembly)
 
-    PipelineLatch if_id_latch;
-    PipelineLatch id_ex_latch;
-    PipelineLatch ex_mem_latch;
-    PipelineLatch mem_wb_latch;
+    // Pipeline stages
+    PipelineStage fetchToDecode;
+    PipelineStage decodeToExecute;
+    PipelineStage executeToMemory;
+    PipelineStage memoryToWriteback;
 
-    std::map<uint32_t, std::vector<std::string>> pipelineTrace;
-    int currentCycle;
-    int maxCycles;
+    std::map<uint32_t, std::vector<std::string> > pipelineHistory; // Tracks stages per instruction
+    int currentCycleCount;
+    int maxCycleLimit;
 
-    bool stallPipeline = false;
-    bool flushIFID = false;
+    bool pausePipeline = false; // Stall flag
+    bool clearFetchDecode = false; // Flush flag
 
-    void fetch();
-    void decode();
-    void execute();
-    void memory();
-    void writeback();
+    // Core pipeline functions
+    void fetchInstruction();
+    void decodeInstruction();
+    void executeInstruction();
+    void accessMemory();
+    void writeBackToRegisters();
 
-    InstructionInfo decodeInstruction(uint32_t instr_word, uint32_t current_pc);
-    void initializeRegisters(uint32_t sp_val = 0x7ffffff0, uint32_t gp_val = 0x10000000);
-    void recordStage(uint32_t instr_pc, const std::string& stage);
-    bool checkForHazard(const InstructionInfo& id_instr_potential); // Will be updated
+    InstructionDetails interpretInstruction(uint32_t machineCode, uint32_t address);
+    void setupRegisters(uint32_t stackPointer = 0x7ffffff0, uint32_t globalPointer = 0x10000000);
+    void logStage(uint32_t address, const std::string& stageName);
+    bool hasDataHazard(const InstructionDetails& currentInstruction);
 };
 
 #endif // PROCESSOR_HPP

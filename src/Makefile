@@ -1,27 +1,11 @@
-CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -g # Use C++17, enable warnings, add debug info
-LDFLAGS =
+all: forward noforward
 
-# Source files
-SRCS = main.cpp processor.cpp
-# Object files
-OBJS = $(SRCS:.cpp=.o)
+forward: forwarding.cpp
+	g++ -o forward forwarding.cpp
 
-# Executable name
-TARGET = noforward forward
+noforward: main.cpp
+	g++ -o noforward processor.cpp main.cpp
 
-# Default target
-all: $(TARGET)
-
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(TARGET) $(LDFLAGS)
-
-# Rule to compile .cpp files into .o files
-%.o: %.cpp processor.hpp structures.hpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Clean target
+.PHONY: clean all
 clean:
-	rm -f $(OBJS) $(TARGET)
-
-.PHONY: all clean
+	rm -f forward noforward

@@ -3,251 +3,356 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-#include <stdexcept> // For runtime_error
-#include <algorithm> // For std::min
+#include <algorithm>
 
-// Constructor, initializeRegisters, loadProgram remain the same
-
-Processor::Processor() : pc(0), regs(32, 0), currentCycle(0), maxCycles(0) {
-    initializeRegisters();
-    if_id_latch.info = InstructionInfo(true); if_id_latch.valid = false; // Corrected typo
-    id_ex_latch.info = InstructionInfo(true); id_ex_latch.valid = false;
-    ex_mem_latch.info = InstructionInfo(true); ex_mem_latch.valid = false;
-    mem_wb_latch.info = InstructionInfo(true); mem_wb_latch.valid = false;
+Processor::Processor() 
+    : programCounter(0), registers(32, 0), currentCycleCount(0), maxCycleLimit(0) {
+    setupRegisters();
+    fetchToDecode.instruction = InstructionDetails(true);
+    decodeToExecute.instruction = InstructionDetails(true);
+    executeToMemory.instruction = InstructionDetails(true);
+    memoryToWriteback.instruction = InstructionDetails(true);
 }
 
-void Processor::initializeRegisters(uint32_t sp_val, uint32_t gp_val) {
-    regs.assign(32, 0);
-    if (regs.size() > 1) regs[1] = HALT_ADDRESS;
-    if (regs.size() > 2) regs[2] = sp_val;
-    if (regs.size() > 3) regs[3] = gp_val;
+void Processor::setupRegisters(uint32_t stackPointer, uint32_t globalPointer) {
+    registers.assign(32, 0);
+    if (registers.size() > 1) registers[1] = STOP_ADDRESS; // ra (return address)
+    if (registers.size() > 2) registers[2] = stackPointer;  // sp
+    if (registers.size() > 3) registers[3] = globalPointer; // gp
 }
 
-void Processor::loadProgram(const std::string& filename) {
+void Processor::loadProgramFromFile(const std::string& filename) {
     std::ifstream file(filename);
-    if (!file.is_open()) { throw std::runtime_error("Error: Could not open input file " + filename); }
-    std::string line; uint32_t current_address = 0; instructionMemory.clear();
-    while (getline(file, line)) {
-        std::stringstream ss(line); std::string assembly_str; uint32_t machine_code;
-        if (!(ss >> std::hex >> machine_code)) {
-             if (!line.empty() && line.find_first_not_of(" \t\r\n") != std::string::npos) {
-                 std::cerr << "Warning: Could not parse machine code from line: \"" << line << "\"" << std::endl;
-             } continue;
+    if (!file.is_open()) {
+        throw std::runtime_error("Could not open file: " + filename);
+    }
+
+    std::string line;
+    uint32_t address = 0;
+    programMemory.clear();
+
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        uint32_t machineCode;
+        std::string assembly;
+
+        if (!(ss >> std::hex >> machineCode)) {
+            if (!line.empty() && line.find_first_not_of(" \t\r\n") != std::string::npos) {
+                std::cerr << "Warning: Skipping invalid line: \"" << line << "\"" << std::endl;
+            }
+            continue;
         }
-        getline(ss, assembly_str); size_t first_char = assembly_str.find_first_not_of(" \t");
-        if (std::string::npos != first_char) { assembly_str = assembly_str.substr(first_char); } else { assembly_str = ""; }
-        instructionMemory[current_address] = {machine_code, assembly_str}; current_address += 4;
+
+        std::getline(ss, assembly);
+        assembly.erase(0, assembly.find_first_not_of(" \t"));
+        programMemory[address] = std::make_pair(machineCode, assembly.empty() ? "NOP" : assembly);
+        address += 4;
     }
-    file.close(); pc = 0;
-    std::cout << "Program loaded. Starting PC: 0x" << std::hex << pc << std::dec << ". " << instructionMemory.size() << " instructions." << std::endl;
+
+    file.close();
+    programCounter = 0;
+    std::cout << "Loaded " << programMemory.size() << " instructions. Starting at 0x" 
+              << std::hex << programCounter << std::dec << "." << std::endl;
 }
 
-// run(), recordStage remain the same
+void Processor::runSimulation(int totalCycles) {
+    maxCycleLimit = totalCycles;
+    if (programMemory.empty()) {
+        std::cout << "No program loaded. Stopping." << std::endl;
+        maxCycleLimit = 0;
+        return;
+    }
 
-void Processor::run(int cycles) {
-    maxCycles = cycles;
-    if (instructionMemory.empty()) { std::cout << "No instructions loaded. Halting." << std::endl; maxCycles = 0; return; }
-    for (currentCycle = 0; currentCycle < maxCycles; ++currentCycle) {
-        if (pc == HALT_ADDRESS) {
-            std::cout << "HALT address (0x" << std::hex << HALT_ADDRESS << std::dec << ") reached. Halting simulation at cycle " << currentCycle << "." << std::endl;
-            maxCycles = currentCycle; break;
+    for (currentCycleCount = 0; currentCycleCount < maxCycleLimit; ++currentCycleCount) {
+        if (programCounter == STOP_ADDRESS) {
+            std::cout << "Reached STOP_ADDRESS (0x" << std::hex << STOP_ADDRESS 
+                      << std::dec << ") at cycle " << currentCycleCount << "." << std::endl;
+            maxCycleLimit = currentCycleCount;
+            break;
         }
-        stallPipeline = false; // Reset stall signal each cycle
-        // Execute stages in reverse order
-        writeback(); memory(); execute(); decode(); fetch();
-        // Check for empty pipeline termination
-         bool pipelineEmpty = !if_id_latch.valid && !id_ex_latch.valid && !ex_mem_latch.valid && !mem_wb_latch.valid;
-         if (pipelineEmpty) {
-             uint32_t max_addr = 0; if (!instructionMemory.empty()) { max_addr = instructionMemory.rbegin()->first; }
-             if (pc > max_addr && pc != HALT_ADDRESS) {
-                std::cout << "Pipeline empty and PC (0x" << std::hex << pc << std::dec << ") beyond last instruction. Halting early at cycle " << currentCycle + 1 << "." << std::endl;
-                maxCycles = currentCycle + 1; break;
-             }
-         }
+
+        pausePipeline = false;
+        writeBackToRegisters();
+        accessMemory();
+        executeInstruction();
+        decodeInstruction();
+        fetchInstruction();
+
+        bool isPipelineEmpty = !fetchToDecode.hasData && !decodeToExecute.hasData && 
+                              !executeToMemory.hasData && !memoryToWriteback.hasData;
+        if (isPipelineEmpty) {
+            uint32_t lastAddress = programMemory.empty() ? 0 : programMemory.rbegin()->first;
+            if (programCounter > lastAddress && programCounter != STOP_ADDRESS) {
+                std::cout << "Pipeline empty and PC (0x" << std::hex << programCounter 
+                          << std::dec << ") past end. Stopping at cycle " << currentCycleCount + 1 << "." << std::endl;
+                maxCycleLimit = currentCycleCount + 1;
+                break;
+            }
+        }
     }
-    maxCycles = std::min(maxCycles, currentCycle); // Adjust maxCycles if halted early
+    maxCycleLimit = std::min(maxCycleLimit, currentCycleCount);
 }
 
-void Processor::recordStage(uint32_t instr_pc, const std::string& stage) {
-    if (currentCycle >= maxCycles) return;
-    if (pipelineTrace[instr_pc].size() <= static_cast<size_t>(currentCycle)) {
-        pipelineTrace[instr_pc].resize(static_cast<size_t>(currentCycle) + 1, "-");
+void Processor::logStage(uint32_t address, const std::string& stageName) {
+    if (currentCycleCount >= maxCycleLimit) return;
+    auto& history = pipelineHistory[address];
+    if (history.size() <= static_cast<size_t>(currentCycleCount)) {
+        history.resize(currentCycleCount + 1, "-");
     }
-    if (static_cast<size_t>(currentCycle) < pipelineTrace[instr_pc].size()) {
-         pipelineTrace[instr_pc][static_cast<size_t>(currentCycle)] = stage;
-    }
+    history[currentCycleCount] = stageName;
 }
 
-// Fetch stage remains the same (correctly handles stallPipeline)
+void Processor::fetchInstruction() {
+    if (currentCycleCount >= maxCycleLimit) return;
+    uint32_t currentAddress = programCounter;
+    bool canFetch = programMemory.count(currentAddress) > 0;
 
-void Processor::fetch() {
-    if (currentCycle >= maxCycles) return;
-    uint32_t pc_to_fetch = pc;
-    bool record_if = false; std::string current_assembly_str = "NOP"; uint32_t current_instr_word = 0x13;
-    if (instructionMemory.count(pc_to_fetch)) {
-         record_if = true; const auto& instr_data = instructionMemory.at(pc_to_fetch);
-         current_instr_word = instr_data.first; current_assembly_str = instr_data.second;
-         recordStage(pc_to_fetch, "IF");
-    } else if (pc_to_fetch != HALT_ADDRESS) { /* Handle out of bounds PC */ }
-    if (stallPipeline) { return; } // <<< If ID is stalled, Fetch does NOTHING else this cycle (no latch update, no PC update)
-    if (record_if) {
-        if_id_latch.info = InstructionInfo(false); if_id_latch.info.instruction = current_instr_word;
-        if_id_latch.info.assemblyString = current_assembly_str; if_id_latch.info.pc = pc_to_fetch;
-        if_id_latch.valid = true;
-        pc = pc_to_fetch + 4; // Update PC for NEXT fetch ONLY if not stalled and no jump taken
+    if (pausePipeline) {
+        if (canFetch) logStage(currentAddress, "-");
+        return;
+    }
+
+    if (canFetch) {
+        auto [code, text] = programMemory[currentAddress];
+        fetchToDecode.instruction = InstructionDetails(false);
+        fetchToDecode.instruction.machineCode = code;
+        fetchToDecode.instruction.assemblyText = text;
+        fetchToDecode.instruction.programCounter = currentAddress;
+        fetchToDecode.hasData = true;
+        logStage(currentAddress, "IF");
+        programCounter += 4;
     } else {
-        if_id_latch.info = InstructionInfo(true); if_id_latch.valid = false;
+        fetchToDecode.instruction = InstructionDetails(true);
+        fetchToDecode.hasData = false;
     }
 }
 
-// checkForHazard remains the same
+void Processor::decodeInstruction() {
+    if (currentCycleCount >= maxCycleLimit) return;
+    uint32_t instructionAddress = fetchToDecode.hasData ? fetchToDecode.instruction.programCounter : 0;
+    bool hasValidInstruction = fetchToDecode.hasData && !fetchToDecode.instruction.isEmpty;
 
-bool Processor::checkForHazard(const InstructionInfo& id_instr_potential) {
-    uint32_t inst = id_instr_potential.instruction;
-    uint32_t rs1_addr = (inst >> 15) & 0x1F; uint32_t rs2_addr = (inst >> 20) & 0x1F;
-    bool need_rs1 = (rs1_addr != 0); bool need_rs2 = (rs2_addr != 0);
-    // Check against instruction completing EX stage (in ex_mem_latch)
-    if (ex_mem_latch.valid && !ex_mem_latch.info.isBubble && ex_mem_latch.info.regWrite && ex_mem_latch.info.rd != 0) {
-        if ((need_rs1 && ex_mem_latch.info.rd == rs1_addr) || (need_rs2 && ex_mem_latch.info.rd == rs2_addr)) { return true; }
+    if (clearFetchDecode) {
+        if (hasValidInstruction) logStage(instructionAddress, "-");
+        fetchToDecode.instruction = InstructionDetails(true);
+        fetchToDecode.hasData = false;
+        clearFetchDecode = false;
+        hasValidInstruction = false;
     }
-    // Check against instruction completing MEM stage (in mem_wb_latch)
-    if (mem_wb_latch.valid && !mem_wb_latch.info.isBubble && mem_wb_latch.info.regWrite && mem_wb_latch.info.rd != 0) {
-         if ((need_rs1 && mem_wb_latch.info.rd == rs1_addr) || (need_rs2 && mem_wb_latch.info.rd == rs2_addr)) { return true; }
+
+    if (!hasValidInstruction) {
+        decodeToExecute.instruction = InstructionDetails(true);
+        decodeToExecute.hasData = false;
+        return;
     }
-    return false; // No hazard detected
+
+    InstructionDetails current = fetchToDecode.instruction;
+    if (hasDataHazard(current)) {
+        pausePipeline = true;
+        decodeToExecute.instruction = InstructionDetails(true);
+        decodeToExecute.hasData = false;
+        logStage(current.programCounter, "-");
+        return;
+    }
+
+    decodeToExecute.instruction = interpretInstruction(current.machineCode, current.programCounter);
+    decodeToExecute.instruction.assemblyText = current.assemblyText;
+    decodeToExecute.hasData = !decodeToExecute.instruction.isEmpty;
+    if (decodeToExecute.hasData) {
+        logStage(decodeToExecute.instruction.programCounter, "ID");
+    }
 }
 
-// decodeInstruction remains the same
+bool Processor::hasDataHazard(const InstructionDetails& current) {
+    uint32_t code = current.machineCode;
+    uint32_t reg1 = (code >> 15) & 0x1F; // rs1
+    uint32_t reg2 = (code >> 20) & 0x1F; // rs2
+    bool usesReg1 = reg1 != 0;
+    bool usesReg2 = reg2 != 0;
 
-InstructionInfo Processor::decodeInstruction(uint32_t instr_word, uint32_t current_pc) {
-    // ... (Code is identical to the previous correct version) ...
-    // ... (Sets flags: regWrite, memRead, memWrite, isBranch(for jal/jalr)) ...
-     InstructionInfo info(false); info.instruction = instr_word; info.pc = current_pc;
-    info.opcode = instr_word & 0x7F; info.rd = (instr_word >> 7) & 0x1F; info.funct3 = (instr_word >> 12) & 0x7;
-    info.rs1 = (instr_word >> 15) & 0x1F; info.rs2 = (instr_word >> 20) & 0x1F; info.funct7 = (instr_word >> 25) & 0x7F;
-    info.regWrite = false; info.memRead = false; info.memWrite = false; info.isBranch = false; // isBranch for unconditional jumps only
-
-    switch (info.opcode) {
-        case 0x33: info.regWrite = (info.rd != 0); break; // R-type. Check rd != 0
-        case 0x13: if (instr_word == 0x00000013) { info = InstructionInfo(true); break; } info.regWrite = (info.rd != 0); info.imm = (int32_t)(instr_word & 0xFFF00000) >> 20; break; // I-type (ADDI etc), NOP
-        case 0x03: info.regWrite = (info.rd != 0); info.memRead = true; info.imm = (int32_t)(instr_word & 0xFFF00000) >> 20; break; // I-type Load
-        case 0x23: info.memWrite = true; info.imm = ((int32_t)(instr_word & 0xFE000000) >> 20) | ((instr_word >> 7) & 0x1F); if (info.imm & 0x800) info.imm |= 0xFFFFF000; break; // S-type Store
-        case 0x63: /* BEQ - No flush needed */ info.imm = (((int32_t)(instr_word & 0x80000000) >> 19)) | ((instr_word & 0x80) << 4) | ((instr_word >> 20) & 0x7E0) | ((instr_word >> 7) & 0x1E); if (info.imm & 0x1000) info.imm |= 0xFFFFE000; break; // B-type
-        case 0x6F: info.regWrite = (info.rd != 0); info.isBranch = true; /* JAL - Flush needed */ info.imm = (((int32_t)(instr_word & 0x80000000) >> 11)) | (instr_word & 0xFF000) | ((instr_word >> 9) & 0x800) | ((instr_word >> 20) & 0x7FE); if (info.imm & 0x100000) info.imm |= 0xFFE00000; break; // J-type
-        case 0x67: info.regWrite = (info.rd != 0); info.isBranch = true; /* JALR - Flush needed */ info.imm = (int32_t)(instr_word & 0xFFF00000) >> 20; break; // I-type
-        case 0x00: if (instr_word == 0x00000000) { info = InstructionInfo(true); } else { info = InstructionInfo(true); } break; // Zero instr as NOP
-        default: std::cerr << "Warning: Unsupported opcode: 0x" << std::hex << info.opcode << std::dec << " (Instruction: 0x" << instr_word << ")" << std::endl; info = InstructionInfo(true); break;
-    }
-    return info;
-}
-
-
-// --- Decode Stage (REVERTED to STANDARD STALL) ---
-void Processor::decode() {
-    if (currentCycle >= maxCycles) return;
-
-    uint32_t original_pc = if_id_latch.valid ? if_id_latch.info.pc : 0;
-    bool was_valid_and_not_bubble = if_id_latch.valid && !if_id_latch.info.isBubble;
-
-    // --- Handle Flush ---
-    if (flushIFID) {
-        if (was_valid_and_not_bubble) { recordStage(original_pc, "-"); } // Record flush
-        if_id_latch.valid = false; if_id_latch.info = InstructionInfo(true);
-        flushIFID = false; was_valid_and_not_bubble = false;
-    }
-
-    // --- Propagate Bubble / Invalid Latch ---
-    if (!was_valid_and_not_bubble) {
-        id_ex_latch.info = InstructionInfo(true); id_ex_latch.valid = false; return;
-    }
-
-    InstructionInfo current_instr_info = if_id_latch.info;
-
-    // --- Standard Hazard Detection & Stall ---
-    // *** REVERTED LOGIC START ***
-    if (checkForHazard(current_instr_info)) { // Check if ANY RAW hazard exists
-        stallPipeline = true; // Signal Fetch and IF/ID to hold
-        id_ex_latch.info = InstructionInfo(true); // Insert bubble into ID/EX
-        id_ex_latch.valid = false;
-        recordStage(current_instr_info.pc, "-"); // Record stall in this cycle's ID slot
-        return; // Stall!
-    }
-    // *** REVERTED LOGIC END ***
-
-    // --- No Stall / No Flush - Proceed with Decode ---
-    id_ex_latch.valid = true;
-    id_ex_latch.info = decodeInstruction(current_instr_info.instruction, current_instr_info.pc);
-    id_ex_latch.info.assemblyString = current_instr_info.assemblyString;
-
-    if (id_ex_latch.info.isBubble) { // Handle decode error
-        id_ex_latch.valid = false;
-        recordStage(id_ex_latch.info.pc, "ERR"); return;
-    }
-
-    // Record ID stage completion
-    recordStage(id_ex_latch.info.pc, "ID");
-}
-
-
-// execute(), memory(), writeback(), printPipelineDiagram() remain the same
-
-void Processor::execute() {
-    if (currentCycle >= maxCycles) return;
-    if (!id_ex_latch.valid || id_ex_latch.info.isBubble) {
-        ex_mem_latch.info = InstructionInfo(true); ex_mem_latch.valid = false; return;
-    }
-    ex_mem_latch.valid = true; ex_mem_latch.info = id_ex_latch.info;
-    InstructionInfo& info = ex_mem_latch.info;
-
-    if (info.isBranch) { // Set only for JAL/JALR
-        flushIFID = true;
-        if (info.opcode == 0x6F) { pc = info.pc + info.imm; }
-        else if (info.opcode == 0x67) {
-            if (info.rs1 == 1 && info.imm == 0) { pc = HALT_ADDRESS; } else { pc = (0 + info.imm) & ~1U; }
+    if (executeToMemory.hasData && !executeToMemory.instruction.isEmpty && 
+        executeToMemory.instruction.writesRegister) {
+        uint32_t targetReg = executeToMemory.instruction.destReg;
+        if (targetReg != 0 && ((usesReg1 && targetReg == reg1) || (usesReg2 && targetReg == reg2))) {
+            return true;
         }
     }
-    recordStage(info.pc, "EX");
-}
 
-void Processor::memory() {
-    if (currentCycle >= maxCycles) return;
-    if (!ex_mem_latch.valid || ex_mem_latch.info.isBubble) {
-        mem_wb_latch.info = InstructionInfo(true); mem_wb_latch.valid = false; return;
+    if (memoryToWriteback.hasData && !memoryToWriteback.instruction.isEmpty && 
+        memoryToWriteback.instruction.writesRegister) {
+        uint32_t targetReg = memoryToWriteback.instruction.destReg;
+        if (targetReg != 0 && ((usesReg1 && targetReg == reg1) || (usesReg2 && targetReg == reg2))) {
+            return true;
+        }
     }
-    mem_wb_latch.valid = true; mem_wb_latch.info = ex_mem_latch.info;
-    recordStage(mem_wb_latch.info.pc, "MEM");
+    return false;
 }
 
-void Processor::writeback() {
-    if (currentCycle >= maxCycles) return;
-    if (!mem_wb_latch.valid || mem_wb_latch.info.isBubble) { return; }
-    recordStage(mem_wb_latch.info.pc, "WB");
+InstructionDetails Processor::interpretInstruction(uint32_t machineCode, uint32_t address) {
+    InstructionDetails details(false);
+    details.machineCode = machineCode;
+    details.programCounter = address;
+
+    // Extract instruction fields
+    details.opcode = machineCode & 0x7F;
+    details.destReg = (machineCode >> 7) & 0x1F;
+    details.func3 = (machineCode >> 12) & 0x7;
+    details.srcReg1 = (machineCode >> 15) & 0x1F;
+    details.srcReg2 = (machineCode >> 20) & 0x1F;
+    details.func7 = (machineCode >> 25) & 0x7F;
+
+    switch (details.opcode) {
+        case 0x33: // R-type (e.g., ADD, SUB)
+            details.writesRegister = (details.destReg != 0);
+            break;
+
+        case 0x13: // I-type ALU (e.g., ADDI)
+            if (machineCode == 0x00000013) return InstructionDetails(true); // NOP
+            details.writesRegister = (details.destReg != 0);
+            details.immediate = (int32_t)(machineCode & 0xFFF00000) >> 20;
+            break;
+
+        case 0x03: // I-type Load (e.g., LW)
+            details.writesRegister = (details.destReg != 0);
+            details.readsMemory = true;
+            details.immediate = (int32_t)(machineCode & 0xFFF00000) >> 20;
+            break;
+
+        case 0x23: // S-type Store (e.g., SW)
+            details.writesMemory = true;
+            details.immediate = ((int32_t)(machineCode & 0xFE000000) >> 20) | 
+                               ((machineCode >> 7) & 0x1F);
+            if (details.immediate & 0x800) details.immediate |= 0xFFFFF000;
+            break;
+
+        case 0x63: // B-type Branch (e.g., BEQ) - Not taken in this sim
+            details.immediate = (((int32_t)(machineCode & 0x80000000) >> 19)) | 
+                               ((machineCode & 0x80) << 4) | 
+                               ((machineCode >> 20) & 0x7E0) | 
+                               ((machineCode >> 7) & 0x1E);
+            if (details.immediate & 0x1000) details.immediate |= 0xFFFFE000;
+            break;
+
+        case 0x6F: // J-type JAL
+            details.writesRegister = (details.destReg != 0);
+            details.isJump = true;
+            details.immediate = (((int32_t)(machineCode & 0x80000000) >> 11)) | 
+                               (machineCode & 0xFF000) | 
+                               ((machineCode >> 9) & 0x800) | 
+                               ((machineCode >> 20) & 0x7FE);
+            if (details.immediate & 0x100000) details.immediate |= 0xFFE00000;
+            break;
+
+        case 0x67: // I-type JALR
+            if (details.func3 == 0x0) {
+                details.writesRegister = (details.destReg != 0);
+                details.isJump = true;
+                details.immediate = (int32_t)(machineCode & 0xFFF00000) >> 20;
+            } else {
+                std::cerr << "Warning: Unknown JALR funct3 at 0x" << std::hex << address << std::dec << std::endl;
+                return InstructionDetails(true);
+            }
+            break;
+
+        case 0x37: // U-type LUI
+            details.writesRegister = (details.destReg != 0);
+            details.immediate = (int32_t)(machineCode & 0xFFFFF000);
+            break;
+
+        case 0x17: // U-type AUIPC
+            details.writesRegister = (details.destReg != 0);
+            details.immediate = (int32_t)(machineCode & 0xFFFFF000);
+            break;
+
+        case 0x73: // System (ECALL/EBREAK)
+        case 0x0F: // Fence
+        case 0x00: // Zero instruction
+            return InstructionDetails(true);
+
+        default:
+            std::cerr << "Warning: Unknown opcode 0x" << std::hex << details.opcode 
+                      << " at 0x" << address << std::dec << std::endl;
+            return InstructionDetails(true);
+    }
+    return details;
 }
 
-void Processor::printPipelineDiagram() {
-    std::cout << "\nPipeline Diagram (" << maxCycles << " cycles):\n";
-    std::vector<std::pair<uint32_t, std::string>> sorted_instructions;
-    for (const auto& pair : instructionMemory) { sorted_instructions.push_back({pair.first, pair.second.second}); }
-    std::sort(sorted_instructions.begin(), sorted_instructions.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
-    for (const auto& instr_pair : sorted_instructions) {
-        uint32_t instr_pc = instr_pair.first; const std::string& assembly_str = instr_pair.second;
-        if (pipelineTrace.count(instr_pc)) {
-            std::cout << std::left << std::setw(20) << assembly_str.substr(0,19); // Limit assembly str width
-             const auto& trace = pipelineTrace.at(instr_pc);
-            for (int cycle = 0; cycle < maxCycles; ++cycle) {
+void Processor::executeInstruction() {
+    if (currentCycleCount >= maxCycleLimit) return;
+    if (!decodeToExecute.hasData || decodeToExecute.instruction.isEmpty) {
+        executeToMemory.instruction = InstructionDetails(true);
+        executeToMemory.hasData = false;
+        return;
+    }
+
+    executeToMemory = decodeToExecute;
+    InstructionDetails& current = executeToMemory.instruction;
+
+    if (current.isJump) {
+        clearFetchDecode = true;
+        if (current.opcode == 0x6F) { // JAL
+            programCounter = current.programCounter + current.immediate;
+        } else if (current.opcode == 0x67) { // JALR
+            if (current.srcReg1 == 1 && current.immediate == 0 && current.destReg == 0) {
+                programCounter = STOP_ADDRESS;
+            } else {
+                programCounter = (0 + current.immediate) & ~1U;
+            }
+        }
+    }
+    logStage(current.programCounter, "EX");
+}
+
+void Processor::accessMemory() {
+    if (currentCycleCount >= maxCycleLimit) return;
+    if (!executeToMemory.hasData || executeToMemory.instruction.isEmpty) {
+        memoryToWriteback.instruction = InstructionDetails(true);
+        memoryToWriteback.hasData = false;
+        return;
+    }
+
+    memoryToWriteback = executeToMemory;
+    logStage(memoryToWriteback.instruction.programCounter, "MEM");
+}
+
+void Processor::writeBackToRegisters() {
+    if (currentCycleCount >= maxCycleLimit) return;
+    if (!memoryToWriteback.hasData || memoryToWriteback.instruction.isEmpty) return;
+    logStage(memoryToWriteback.instruction.programCounter, "WB");
+}
+
+void Processor::displayPipeline() {
+    std::cout << "\nPipeline Diagram (" << maxCycleLimit << " cycles):\n";
+    std::vector<std::pair<uint32_t, std::string> > instructions;
+    for (const auto& [addr, data] : programMemory) {
+        instructions.emplace_back(addr, data.second);
+    }
+    std::sort(instructions.begin(), instructions.end());
+
+    std::cout << std::left << std::setw(20) << "Instruction";
+    for (size_t cycle = 0; cycle < static_cast<size_t>(maxCycleLimit); ++cycle) {
+        std::cout << ";" << std::setw(3) << std::right << cycle;
+    }
+    std::cout << std::endl;
+
+    for (const auto& [addr, text] : instructions) {
+        if (pipelineHistory.count(addr)) {
+            std::cout << std::left << std::setw(20) << text.substr(0, 19);
+            const auto& stages = pipelineHistory[addr];
+            for (size_t cycle = 0; cycle < static_cast<size_t>(maxCycleLimit); ++cycle) {
                 std::cout << ";";
-                if (static_cast<size_t>(cycle) < trace.size()) { std::cout << std::setw(3) << std::left << trace[static_cast<size_t>(cycle)]; }
-                else { std::cout << std::setw(3) << std::left << "-"; }
+                std::cout << std::setw(3) << std::left 
+                          << (cycle < stages.size() ? stages[cycle] : "-");
             }
             std::cout << std::endl;
         }
     }
-     std::cout << "\nFinal Register State (Simplified - Values mostly unused):\n";
-     std::cout << std::hex; // Set output to hexadecimal
-     for(size_t i = 0; i < regs.size(); ++i) {
-         if (i % 4 == 0 && i != 0) std::cout << "\n"; // 4 registers per line
-         std::cout << "x" << std::setw(2) << std::dec << i << ": " // Print register number in decimal
-                   << std::setw(11) << std::hex << "0x" << regs[i] << "  "; // Print value in hex
-     }
-     std::cout << std::dec << std::endl; // Reset to decimal output
+
+    std::cout << "\nFinal Register State:\n" << std::hex;
+    for (size_t i = 0; i < registers.size(); ++i) {
+        if (i % 4 == 0 && i != 0) std::cout << "\n";
+        std::cout << "x" << std::setw(2) << std::dec << i << ": " 
+                  << std::setw(11) << std::hex << "0x" << registers[i] << "  ";
+    }
+    std::cout << std::dec << std::endl;
 }

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <bitset>
 #include <vector>
 using namespace std;
@@ -82,7 +83,8 @@ EX_MEM ex_mem = {bitset<32>(0), 0, 0, 0, 0, 0, 0, 0, 0, 0, false};
 MEM_WB mem_wb = {bitset<32>(0), 0, 0, 0, 0, 0, 0, 0, 0, false};
 WB_IF wb_if = {bitset<32>(0), 0, 0, 0, 0, 0, 0, 0, 0, false};
 PC pc = {0, 0, 0, true};
-bitset<32> inst_mem[1024];
+// bitset<32> inst_mem[1024];
+vector<bitset<32> > inst_mem;
 int inst_count = 0;
 bool stall = false;
 int stall_count = 0;
@@ -108,63 +110,49 @@ void load_instructions(const string& filename) {
     inst_count = 0;
     while (getline(infile, line) && inst_count < 1024) {
         if (line.empty()) continue;
-        inst_mem[inst_count] = bitset<32>(stoul(line, nullptr, 16));
-        bitset<32> inst = inst_mem[inst_count];
-        bitset<7> opcode(inst.to_ulong() & 0b1111111);
-        int rd = (int)((inst.to_ulong() >> 7) & 0b11111);
-        int rs1 = (int)((inst.to_ulong() >> 15) & 0b11111);
-        int rs2 = (int)((inst.to_ulong() >> 20) & 0b11111);
-        string mnemonic;
-        switch (opcode.to_ulong()) {
-            case 0b0110011: mnemonic = "add x" + to_string(rd) + " x" + to_string(rs1) + " x" + to_string(rs2); break;
-            case 0b0010011: {
-                int imm = (int)((inst.to_ulong() >> 20) & 0b111111111111);
-                if (imm & 0x800) imm |= 0xFFFFF000;
-                mnemonic = "addi x" + to_string(rd) + " x" + to_string(rs1) + " " + to_string(imm);
-                break;
+
+        // Use stringstream to parse the line
+        stringstream ss(line);
+        int line_num;          // Line number (ignored for now)
+        string hex_code;       // Hexadecimal instruction code
+        string mnemonic;       // Rest of the line is the mnemonic
+        string mnemonic_part;  // To build mnemonic from remaining tokens
+
+        // Extract line number
+        ss >> line_num;
+
+        // Extract hex code
+        ss >> hex_code;
+
+        // Extract the mnemonic (everything after hex code)
+        while (ss >> mnemonic_part) {
+            if (mnemonic.empty()) {
+                mnemonic = mnemonic_part;
+            } else {
+                mnemonic += " " + mnemonic_part;
             }
-            case 0b0000011: {
-                int imm = (int)((inst.to_ulong() >> 20) & 0b111111111111);
-                if (imm & 0x800) imm |= 0xFFFFF000;
-                mnemonic = "lb x" + to_string(rd) + " " + to_string(imm) + "(x" + to_string(rs1) + ")";
-                break;
-            }
-            case 0b1100011: {
-                int imm = ((inst[31] << 12) | (((inst.to_ulong() >> 25) & 0b111111) << 5) |
-                           (((inst.to_ulong() >> 8) & 0b1111) << 1) | (inst[7] << 11));
-                if (inst[31]) imm |= 0xFFFFF000;
-                mnemonic = "beq x" + to_string(rs1) + " x" + to_string(rs2) + " " + to_string(imm);
-                break;
-            }
-            case 0b1101111: {
-                int imm = (inst[31] << 20) | ((inst.to_ulong() >> 21 & 0b1111111111) << 1) |
-                          (inst[20] << 11) | ((inst.to_ulong() >> 12 & 0b11111111) << 12);
-                if (inst[31]) imm |= 0xFFF00000;
-                mnemonic = "jal x" + to_string(rd) + " " + to_string(imm);
-                break;
-            }
-            case 0b1100111: {
-                int imm = (int)((inst.to_ulong() >> 20) & 0b111111111111);
-                if (imm & 0x800) imm |= 0xFFFFF000;
-                mnemonic = "jalr x" + to_string(rd) + " " + to_string(imm) + "(x" + to_string(rs1) + ")";
-                break;
-            }
-            default: mnemonic = "unknown"; break;
         }
+
+        // Store the instruction in binary form
+        inst_mem.push_back(bitset<32>(stoul(hex_code, nullptr, 16)));
+        // Store the mnemonic as provided in the input
         mnemonics.push_back(mnemonic);
         inst_count++;
     }
     infile.close();
 
-    // Initialize with spaces instead of "-"
+    // Initialize pipeline stages with spaces
     pipeline_stages.resize(inst_count, vector<string>(cycle_count_global, "  "));
 }
 
 void process_stalls() {
     for (int i = 0; i < inst_count; i++) {
         for (int c = 1; c < cycle_count_global; c++) {
-            if (pipeline_stages[i][c] == pipeline_stages[i][c - 1] && pipeline_stages[i][c] != " ") {
-                pipeline_stages[i][c] = "--";
+            // Check if the current stage is the same as the previous stage
+            if (pipeline_stages[i][c] == pipeline_stages[i][c - 1] && 
+                pipeline_stages[i][c] != "  " && // Ignore empty stages
+                pipeline_stages[i][c] != " - ") {   // Ignore already marked stalls
+                pipeline_stages[i][c] = " - ";      // Replace with a stall
             }
         }
     }
@@ -197,8 +185,8 @@ void print_pipeline() {
             // Pad the stage label to 3 characters
             if (stage == "  ") {
                 stage = "   "; // Empty stage: 3 spaces
-            } else if (stage == "--") {
-                stage = "-- "; // Stall: Pad to 3 characters
+            } else if (stage == " - ") {
+                stage = " - "; // Stall: Pad to 3 characters
             } else if (stage == "IF" || stage == "ID" || stage == "EX" || stage == "WB") {
                 stage = stage + " "; // Pad 2-character labels to 3 characters
             } else if (stage == "MEM") {
@@ -224,19 +212,38 @@ void instruction_fetch(int cycle) {
     //DEBUG
     // cout<<"Instruction Fetch"<<endl;
     int idx = cycle - 1;
-    if (if_stall) {
+    if (if_stall && pc.valid && pc.pc /4 < inst_count) {
         // if(cycle == 8) cout << "Hayee" << endl;
-        pc.pc -= 4;
-        if (pc.pc / 4  < inst_count) {
-            pipeline_stages[pc.pc / 4][idx] = "IF";
+        if(cycle == 6) cout << "Hi4" << endl;
+        if(cycle == 6){
+            cout << "if_id.pc : " << if_id.pc << " pc.pc : " << pc.pc << endl;
         }
+        pc.pc -= 4;
+        if (pc.valid && pc.pc / 4  < inst_count) {
+            pipeline_stages[pc.pc / 4][idx] = "IF";
+            if_id.inst = inst_mem[pc.pc / 4];
+        }
+        if_id.pc = pc.pc;
         pc.pc += 4;
         // if_id.valid = false;
+        if_id.valid = true;
         if_stall = false;
+        // if(cycle == 5){
+        //     //print all latches pc values
+        //     cout << "IF/ID: " << if_id.pc << endl;
+        //     cout << "ID/EX: " << id_ex.pc << endl;
+        //     cout << "EX/MEM: " << ex_mem.pc << endl;
+        //     cout << "MEM/WB: " << mem_wb.pc << endl;
+        //     cout << "PC: " << pc.pc << endl;
+        //     cout << "stall count: " << stall_count << endl;
+        //     cout << "stall: " << stall << endl;
+        //     cout << "if_stall: " << if_stall << endl;
+        // }
         return; // Previous IF remains
     }
     if (ex_jump && (cycle == prev_cycle + 1)) {
         // if(cycle == 8) cout << "Hayee" << endl;
+        // if(cycle == 5) cout << "Hi3" << endl;
         pc.pc = new_addr;
         ex_jump = false;
         if_id.inst = inst_mem[pc.pc / 4];
@@ -250,39 +257,41 @@ void instruction_fetch(int cycle) {
     }
     if (ex_branch) {
         // if(cycle == 8) cout << "Hayee" << endl;
+        // if(cycle == 5) cout << "Hi2" << endl;
         ex_branch = false;
-        pc.pc -= 4;
         if_id.inst = inst_mem[pc.pc / 4];
         if_id.pc = pc.pc;
         if_id.valid = true;
         if (pc.pc / 4 < inst_count) {
             pipeline_stages[pc.pc / 4][idx] = "IF";
         }
-        pc.pc += 4;
         return;
     }
     if (pc.valid && pc.pc / 4 < inst_count) {
+        // if(cycle == 5) cout << "Hi1" << endl;
         if_id.inst = inst_mem[pc.pc / 4];
         if_id.pc = pc.pc;
         if_id.valid = true;
         pc.pc += 4;
         pipeline_stages[pc.pc / 4 - 1][idx] = "IF";
     } else {
+        // if(cycle == 5) cout << "Hi1" << endl;
+        // if(cycle == 5){
+        //     //print all latches pc values
+        //     cout << "IF/ID: " << if_id.pc << endl;
+        //     cout << "ID/EX: " << id_ex.pc << endl;
+        //     cout << "EX/MEM: " << ex_mem.pc << endl;
+        //     cout << "MEM/WB: " << mem_wb.pc << endl;
+        //     cout << "PC: " << pc.pc << endl;
+        //     cout << "stall count: " << stall_count << endl;
+        //     cout << "stall: " << stall << endl;
+        //     cout << "if_stall: " << if_stall << endl;
+        // }
         if_id.valid = false;
+        if_id.pc = pc.pc;
+        // pc.pc += 4;
     }
     pc.branch = 0;
-
-    // if(cycle == 8){
-    //     //print all latches pc values
-    //     cout << "IF/ID: " << if_id.pc << endl;
-    //     cout << "ID/EX: " << id_ex.pc << endl;
-    //     cout << "EX/MEM: " << ex_mem.pc << endl;
-    //     cout << "MEM/WB: " << mem_wb.pc << endl;
-    //     cout << "PC: " << pc.pc << endl;
-    //     cout << "stall count: " << stall_count << endl;
-    //     cout << "stall: " << stall << endl;
-    //     cout << "if_stall: " << if_stall << endl;
-    // }
 }
 
 void instruction_decode(int cycle) {
@@ -293,6 +302,18 @@ void instruction_decode(int cycle) {
         id_ex.valid = false;
         return;
     }
+    // if(cycle == 6) cout << "Hi" << endl;
+    // if(cycle == 6){
+    //     //print all latches pc values
+    //     cout << "IF/ID: " << if_id.pc << endl;
+    //     cout << "ID/EX: " << id_ex.pc << endl;
+    //     cout << "EX/MEM: " << ex_mem.pc << endl;
+    //     cout << "MEM/WB: " << mem_wb.pc << endl;
+    //     cout << "PC: " << pc.pc << endl;
+    //     cout << "stall count: " << stall_count << endl;
+    //     cout << "stall: " << stall << endl;
+    //     cout << "if_stall: " << if_stall << endl;
+    // }
 
     bitset<32> inst;
     if (stall) {
@@ -309,7 +330,7 @@ void instruction_decode(int cycle) {
             stall = false;
             if_stall = true;
             inst = id_ex.inst;
-            // cout << "rs1: " << (int)((inst.to_ulong() >> 15) & 0b11111) << "rs2: " << (int)((inst.to_ulong() >> 20) & 0b11111) << endl;
+            // if(cycle == 6) cout << "rs1: " << (int)((inst.to_ulong() >> 15) & 0b11111) << "rs2: " << (int)((inst.to_ulong() >> 20) & 0b11111) << endl;
         }
     }
     else {
@@ -322,6 +343,7 @@ void instruction_decode(int cycle) {
     int rs2 = (int)((inst.to_ulong() >> 20) & 0b11111);
     int rd = (int)((inst.to_ulong() >> 7) & 0b11111);
 
+    // if(cycle == 6) cout << "rs1: " << rs1 << " rs2: " << rs2 << " rd: " << rd << endl;
     if (kill) {
         id_ex.inst = inst;
         id_ex.pc = if_id.pc;
@@ -341,21 +363,11 @@ void instruction_decode(int cycle) {
         kill = false;
         return;
     }
-    
+    // if(cycle == 6) cout << "hello" << endl;
     // Hazard detection
     if (opcode.to_ulong() == 0b1100011) {  // Branch (B-type)
-        if (mem_wb.valid && mem_wb.mem_read && mem_wb.rd != 0 && (mem_wb.rd == rs1 || mem_wb.rd == rs2)) {
-            // cout << "Hello from branch 2 instructions after load" << endl;
-            stall = true;
-            stall_count = 1;
-            id_ex.valid = false;
-            pipeline_stages[id_ex.pc / 4][idx] = "ID";
-            id_ex.pc = if_id.pc;
-            id_ex.inst = inst;
-            return;
-        }
         if (ex_mem.valid && ex_mem.mem_read && ex_mem.rd != 0 && (ex_mem.rd == rs1 || ex_mem.rd == rs2)) {
-            // cout << "Hello from branch just after load" << endl;
+            // if(cycle == 6) cout << "Hello from branch just after load" << endl;
             stall = true;
             stall_count = 2;
             id_ex.valid = false;
@@ -364,8 +376,18 @@ void instruction_decode(int cycle) {
             id_ex.inst = inst;
             return;
         }
+        if (mem_wb.valid && mem_wb.mem_read && mem_wb.rd != 0 && (mem_wb.rd == rs1 || mem_wb.rd == rs2)) {
+            // if(cycle == 6) cout << "Hello from branch 2 instructions after load" << endl;
+            stall = true;
+            stall_count = 1;
+            id_ex.valid = false;
+            pipeline_stages[id_ex.pc / 4][idx] = "ID";
+            id_ex.pc = if_id.pc;
+            id_ex.inst = inst;
+            return;
+        }
         if (ex_mem.valid && ex_mem.reg_write && !ex_mem.mem_read && ex_mem.rd != 0 && (ex_mem.rd == rs1 || ex_mem.rd == rs2)) {
-            // cout << "Hello from branch just after R-type" << endl;
+            // if(cycle == 6) cout << "Hello from branch just after R-type" << endl;
             stall = true;
             stall_count = 1;
             id_ex.valid = false;
@@ -500,9 +522,10 @@ void instruction_decode(int cycle) {
         kill = true;
     }
 
-    if (id_ex.branch == 1) {
-        ex_branch = true;
-    }
+    // if (id_ex.branch == 1) {
+    //     // if(cycle == 6) cout << " Haaayeee "  << if_id.pc << endl;
+    //     ex_branch = true;
+    // }
     // if(cycle == 6) cout << " Haaayeee "  << if_id.pc << endl;
     pipeline_stages[id_ex.pc / 4][idx] = "ID";
 }
@@ -600,7 +623,7 @@ int main(int argc, char* argv[]) {
         instruction_fetch(cycle);
     }
 
-    // process_stalls(); // Ensure stalls are processed
+    process_stalls(); // Ensure stalls are processed
     print_pipeline();
     return 0;
 }
