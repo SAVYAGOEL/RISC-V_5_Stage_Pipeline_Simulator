@@ -4,6 +4,8 @@
 #include <sstream>
 #include <bitset>
 #include <vector>
+#include <map>
+#include <unordered_map>
 using namespace std;
 
 typedef struct IF_ID {
@@ -396,7 +398,7 @@ void instruction_decode(int cycle) {
             id_ex.inst = inst;
             return;
         }
-    } else {  // Non-branch
+    } else if (opcode.to_ulong() != 0b0100011){  // Non-branch
         // cout << "Hi, non branch instruction" << endl;
         //print info about previous instruction for debugging, like what is the instruction, wether it is valid, etc.
         // cout << "ex_mem.valid: " << ex_mem.valid << " ex_mem.mem_read: " << ex_mem.mem_read << " ex_mem.rd: " << ex_mem.rd << " rs1: " << rs1 << " rs2: " << rs2 << endl;
@@ -411,6 +413,18 @@ void instruction_decode(int cycle) {
             id_ex.pc = if_id.pc;
             id_ex.inst = inst;
             return;
+        }
+        else{
+            if (ex_mem.valid && ex_mem.mem_read && ex_mem.rd != 0 && (ex_mem.rd == rs2)) {
+                // cout << "Hello from non-branch just after load" << endl;
+                stall = true;
+                stall_count = 1;
+                id_ex.valid = false;
+                pipeline_stages[if_id.pc / 4][idx] = "ID";
+                id_ex.pc = if_id.pc;
+                id_ex.inst = inst;
+                return;
+            }
         }
     }
 
