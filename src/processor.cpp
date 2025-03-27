@@ -33,8 +33,16 @@ void Processor::loadProgramFromFile(const std::string& filename) {
 
     while (std::getline(file, line)) {
         std::stringstream ss(line);
+        int lineNumber;
         uint32_t machineCode;
         std::string assembly;
+
+        if (!(ss >> lineNumber)) {
+            if (!line.empty() && line.find_first_not_of(" \t\r\n") != std::string::npos) {
+                std::cerr << "Warning: Skipping invalid line: \"" << line << "\"" << std::endl;
+            }
+            continue;
+        }
 
         if (!(ss >> std::hex >> machineCode)) {
             if (!line.empty() && line.find_first_not_of(" \t\r\n") != std::string::npos) {
@@ -45,14 +53,16 @@ void Processor::loadProgramFromFile(const std::string& filename) {
 
         std::getline(ss, assembly);
         assembly.erase(0, assembly.find_first_not_of(" \t"));
-        programMemory[address] = std::make_pair(machineCode, assembly.empty() ? "NOP" : assembly);
+        if (assembly.empty()) {
+            assembly = "NOP";
+        }
+
+        programMemory[address] = {machineCode, assembly};
         address += 4;
     }
 
     file.close();
     programCounter = 0;
-    std::cout << "Loaded " << programMemory.size() << " instructions. Starting at 0x" 
-              << std::hex << programCounter << std::dec << "." << std::endl;
 }
 
 void Processor::runSimulation(int totalCycles) {
@@ -202,30 +212,30 @@ InstructionDetails Processor::interpretInstruction(uint32_t machineCode, uint32_
     details.func7 = (machineCode >> 25) & 0x7F;
 
     switch (details.opcode) {
-        case 0x33: // R-type (e.g., ADD, SUB)
+        case 0x33: // R-type 
             details.writesRegister = (details.destReg != 0);
             break;
 
-        case 0x13: // I-type ALU (e.g., ADDI)
+        case 0x13: // I-type ALU 
             if (machineCode == 0x00000013) return InstructionDetails(true); // NOP
             details.writesRegister = (details.destReg != 0);
             details.immediate = (int32_t)(machineCode & 0xFFF00000) >> 20;
             break;
 
-        case 0x03: // I-type Load (e.g., LW)
+        case 0x03: // I-type Load 
             details.writesRegister = (details.destReg != 0);
             details.readsMemory = true;
             details.immediate = (int32_t)(machineCode & 0xFFF00000) >> 20;
             break;
 
-        case 0x23: // S-type Store (e.g., SW)
+        case 0x23: // S-type Store 
             details.writesMemory = true;
             details.immediate = ((int32_t)(machineCode & 0xFE000000) >> 20) | 
                                ((machineCode >> 7) & 0x1F);
             if (details.immediate & 0x800) details.immediate |= 0xFFFFF000;
             break;
 
-        case 0x63: // B-type Branch (e.g., BEQ) - Not taken in this sim
+        case 0x63: // B-type Branch
             details.immediate = (((int32_t)(machineCode & 0x80000000) >> 19)) | 
                                ((machineCode & 0x80) << 4) | 
                                ((machineCode >> 20) & 0x7E0) | 
@@ -322,37 +332,22 @@ void Processor::writeBackToRegisters() {
 }
 
 void Processor::displayPipeline() {
-    std::cout << "\nPipeline Diagram (" << maxCycleLimit << " cycles):\n";
-    std::vector<std::pair<uint32_t, std::string> > instructions;
+    std::vector<std::pair<uint32_t, std::string>> instructions;
     for (const auto& [addr, data] : programMemory) {
-        instructions.emplace_back(addr, data.second);
+        instructions.emplace_back(addr, data.second); 
     }
     std::sort(instructions.begin(), instructions.end());
 
-    std::cout << std::left << std::setw(20) << "Instruction";
-    for (size_t cycle = 0; cycle < static_cast<size_t>(maxCycleLimit); ++cycle) {
-        std::cout << ";" << std::setw(3) << std::right << cycle;
-    }
-    std::cout << std::endl;
-
     for (const auto& [addr, text] : instructions) {
         if (pipelineHistory.count(addr)) {
-            std::cout << std::left << std::setw(20) << text.substr(0, 19);
+            std::cout << text; 
             const auto& stages = pipelineHistory[addr];
-            for (size_t cycle = 0; cycle < static_cast<size_t>(maxCycleLimit); ++cycle) {
+            // Print stages for each cycle up to maxCycleLimit
+            for (int cycle = 0; cycle < maxCycleLimit; ++cycle) {
                 std::cout << ";";
-                std::cout << std::setw(3) << std::left 
-                          << (cycle < stages.size() ? stages[cycle] : "-");
+                std::cout << (cycle < static_cast<int>(stages.size()) ? stages[cycle] : "-");
             }
             std::cout << std::endl;
         }
     }
-
-    std::cout << "\nFinal Register State:\n" << std::hex;
-    for (size_t i = 0; i < registers.size(); ++i) {
-        if (i % 4 == 0 && i != 0) std::cout << "\n";
-        std::cout << "x" << std::setw(2) << std::dec << i << ": " 
-                  << std::setw(11) << std::hex << "0x" << registers[i] << "  ";
-    }
-    std::cout << std::dec << std::endl;
 }

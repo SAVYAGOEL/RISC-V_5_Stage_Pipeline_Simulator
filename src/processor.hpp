@@ -1,4 +1,3 @@
-
 #ifndef PROCESSOR_HPP
 #define PROCESSOR_HPP
 
@@ -8,7 +7,6 @@
 #include <map>
 #include <utility>
 
-// Special address to stop the processor
 const uint32_t STOP_ADDRESS = 0xFFFFFFFF;
 
 class Processor {
@@ -19,22 +17,21 @@ public:
     void displayPipeline();
 
 private:
-    uint32_t programCounter; // Tracks current instruction address
-    std::vector<int32_t> registers; // 32 RISC-V registers
-    std::map<uint32_t, std::pair<uint32_t, std::string> > programMemory; // Address -> (machine code, assembly)
+    uint32_t programCounter;
+    std::vector<int32_t> registers; 
+    std::map<uint32_t, std::pair<uint32_t, std::string>> programMemory; 
 
-    // Pipeline stages
     PipelineStage fetchToDecode;
     PipelineStage decodeToExecute;
     PipelineStage executeToMemory;
     PipelineStage memoryToWriteback;
 
-    std::map<uint32_t, std::vector<std::string> > pipelineHistory; // Tracks stages per instruction
+    std::map<uint32_t, std::vector<std::string>> pipelineHistory; 
     int currentCycleCount;
     int maxCycleLimit;
 
-    bool pausePipeline = false; // Stall flag
-    bool clearFetchDecode = false; // Flush flag
+    bool pausePipeline = false; 
+    bool clearFetchDecode = false; 
 
     // Core pipeline functions
     void fetchInstruction();
@@ -49,4 +46,4 @@ private:
     bool hasDataHazard(const InstructionDetails& currentInstruction);
 };
 
-#endif // PROCESSOR_HPP
+#endif

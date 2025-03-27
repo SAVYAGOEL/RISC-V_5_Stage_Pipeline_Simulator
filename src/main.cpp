@@ -1,10 +1,8 @@
-
 #include "processor.hpp"
 #include <iostream>
 #include <string>
 
 int main(int argc, char* argv[]) {
-    // Check command-line arguments
     if (argc != 3) {
         std::cerr << "Usage: ./noforward <inputfile> <cyclecount>" << std::endl;
         return 1;
@@ -13,7 +11,6 @@ int main(int argc, char* argv[]) {
     std::string filename = argv[1];
     int cycles = 0;
 
-    // Validate cycle count
     try {
         cycles = std::stoi(argv[2]);
         if (cycles <= 0) {
@@ -25,7 +22,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Run the simulation
     try {
         Processor simulator;
         simulator.loadProgramFromFile(filename);
