@@ -1,0 +1,16 @@
+1 00000313 addi x6 x0 0
+2 fff60393 addi x7 x12 -1
+3 0263ca63 blt x7 x6 52
+4 007302b3 add x5 x6 x7
+5 4012d293 srai x5 x5 1
+6 00229e93 slli x29 x5 2
+7 01d50eb3 add x29 x10 x29
+8 000eae83 lw x29 0 x29
+9 00bed663 bge x29 x11 12
+10 00128313 addi x6 x5 1
+11 fe1ff06f jal x0 -32
+12 01d5d663 bge x11 x29 12
+13 fff28393 addi x7 x5 -1
+14 fd5ff06f jal x0 -44
+15 00028513 addi x10 x5 0
+16 00008067 jalr x0 x1 0

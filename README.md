@@ -28,3 +28,23 @@ Sources:
 
 
 
+For forwarding
+
+
+Design decisions for forwarding:
+
+1. Used forwarding/bypassing concept to reduce the number of stalls in the pipeline.
+2. Branches and jump instructions are resolved in the ID stage, meaning that any value which is needed in the ID stage to resolve these instructions, is waited for and hence the instruction is appropriately stalled in the same stage for as long as the value in unavailable.
+3. Assumed that branch is always not taken so fetched the next instruction in the pipeline after the branch or jump instruction, but based on the result of the branch or jump, the instruction is either killed or continued in the pipeline and in the next cycle the correct instruction is fetched.
+4. Used C++ inbuilt map to model the data memory, an integer vector to model the registers and a vector to model the Instruction memory
+5. Fully functional forwarding has been implemented, which checks for all possible latches from where the data can be forwarded, effectively avoiding data hazards as well as reducing the unnecessary number of stalls in the pipeline.
+
+
+Issues with forwarding:
+None encountered till now but does not support ecall, ebreak etc. All other common instructions have been supported and provided operations for.
+
+Sources:
+1. Used the course textbook to look for some forwarding and stalling logic, also for some opcodes.
+2. Used the following link to see all the instructions in the architecture :
+https://www.cs.sfu.ca/~ashriram/Courses/CS295/assets/notebooks/RISCV/RISCV_CARD.pdf
+3. Used ChatGPT for help in parsing input and writing to data memory.

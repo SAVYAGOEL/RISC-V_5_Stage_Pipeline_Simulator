@@ -1,0 +1,7 @@
+lb x5 0 x11;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM
+sb x5 0 x10;-;IF;-;-;ID;EX;MEM;WB;-;-;IF;-;-;ID;EX;MEM;WB;-;-;IF;-;-;ID;EX;MEM;WB;-;-;IF;-;-;ID;EX;MEM;WB;-;-;IF;-;-
+beq x5 x0 16;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-
+addi x10 x10 1;-;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-
+addi x11 x11 1;-;-;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-
+jal x0 -20;-;-;-;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-;-;-;-;IF;ID;EX;MEM;WB;-
+jalr x0 x1 0;-;-;-;-;-;-;-;-;IF;-;-;-;-;-;-;-;-;IF;-;-;-;-;-;-;-;-;IF;-;-;-;-;-;-;-;-;IF;-;-;-;-
